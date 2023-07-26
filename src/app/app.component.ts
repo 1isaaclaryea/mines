@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
+import { MatDrawer } from '@angular/material/sidenav';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,15 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'test1';
+  @ViewChild('drawer') drawer!: MatDrawer;
+
+  drawerOut: boolean = false;
+
+  toggleDrawer($drawer:any){
+    this.drawer.toggle()
+  }
+
+  handleDrawerPositionChanged($event: any){
+    this.drawerOut = $event
+  }
 }

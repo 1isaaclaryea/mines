@@ -1,0 +1,25 @@
+.container {
+    width: 100vw;
+    height: 100vh;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+    
+.sidenav {
+    padding: 20px;
+}
+
+.menu-bar {
+    display: flex;
+    padding: .5rem;
+}
+
+.float-right {
+    display: flex;
+    flex-grow: 9;
+    justify-content: flex-end;
+}
+
+.main-content {
+    padding: 1rem 2rem;
+}
+  

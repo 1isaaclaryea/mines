@@ -1,1 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
+@import "../node_modules/@angular/material/prebuilt-themes/pink-bluegrey.css";
+html, body { height: 100%; }
+
+body { 
+    margin: 0; 
+    font-family: Roboto, "Helvetica Neue", sans-serif; 
+}
+@font-face {
+    font-family: Nexa-bold;
+    src: url(assets/fonts/Nexa_Bold.otf) format("opentype");
+}
+
+@font-face {
+    font-family: Nexa-light;
+    src: url(assets/fonts/Nexa_Light.otf) format("opentype");
+}
+
+* {
+    font-family: 'Nexa-light', sans-serif;
+}
+  
