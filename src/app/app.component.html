@@ -1,5 +1,9 @@
 <mat-drawer-container class="container" autosize>
     <mat-drawer #drawer class="sidenav" mode="push" (openedChange)="handleDrawerPositionChanged($event)">
+      <div class="heading">
+        <img src="assets/logo.png" class="logo" alt="" srcset=""> <br>
+        <p>Mining company</p>
+      </div>
         <mat-nav-list>
             <a mat-list-item href="#">Reports</a>
             <a mat-list-item href="#">Data entry</a>
@@ -14,21 +18,20 @@
 
         <div class="float-right">
           <button class="menu-btn" mat-icon-button aria-label="Settings button">
-            <mat-icon>settings</mat-icon>
+            <mat-icon matTooltip="Application settings">settings</mat-icon>
           </button>
-          <button class="menu-btn" mat-icon-button aria-label="Account settings button">
-            <mat-icon>account_circle</mat-icon>
+          <button (click)="handleRoute('login')" routerLink="/login" class="menu-btn" mat-icon-button aria-label="Account settings button">
+            <mat-icon matTooltip="Account settings">account_circle</mat-icon>
           </button>
         </div>
 
       </div>
       
       <div class="main-content">
-        <test-dash></test-dash>
+        <router-outlet></router-outlet>
       </div>
     </div>
   
 </mat-drawer-container>
   
 
-<router-outlet></router-outlet>

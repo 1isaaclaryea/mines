@@ -78,9 +78,12 @@ export class TestDashComponent implements OnInit, AfterViewInit {
 
     this.weeklyChart.options.data[0].dataPoints = await this.dataService.getWeeklyBudget({title: "Dry Tonnes (t)", rn: 8});
     this.weeklyChart.render();
+
+    // console.log(this.summaryChart)
   }
 
   getSummaryChartInstance($chart:any){
+    console.log("Initialized")
     this.summaryChart = $chart;
   }
 
@@ -134,37 +137,43 @@ export class TestDashComponent implements OnInit, AfterViewInit {
   }
 
   async refreshPlot($event:any, plotType:any){
+    let plotParam = JSON.parse($event);
     switch (plotType) {
       case "summary":
         if(this.summaryType == "monthly") {
+          console.log(await this.dataService.getMonthlyBudget($event));
           this.summaryChart.options.data[0].dataPoints = 
-          await this.dataService.getMonthlyBudget($event);
+          await this.dataService.getMonthlyBudget(plotParam);
+          
         }
         if(this.summaryType == "quarterly") {
           this.summaryChart.options.data[0].dataPoints = 
-          await this.dataService.getQuarterlyBudget($event);
+          await this.dataService.getQuarterlyBudget(plotParam);
+
         }
         if(this.summaryType == "yearToDate") {
           this.summaryChart.options.data[0].dataPoints = 
-          await this.dataService.getYearToDateMonthlyBudget($event);
+          await this.dataService.getYearToDateMonthlyBudget(plotParam);
+
         }
         if(this.summaryType == "daily") {
           this.summaryChart.options.data[0].dataPoints = 
-          await this.dataService.getDailyBudgetForEachMonth($event);
+          await this.dataService.getDailyBudgetForEachMonth(plotParam);
+
         }
-        this.summaryChartOptions.title.text = $event.title;
+        this.summaryChartOptions.title.text = plotParam.title;
         this.summaryChart.render();
-        break
+        break;
 
       case "daily":
-        this.dailyChart.options.data[0].dataPoints = await this.dataService.getDailyBudgetForEachDayInMonth($event, this.selectedMonth);
-        this.dailyChartOptions.title.text = $event.title;
+        this.dailyChart.options.data[0].dataPoints = await this.dataService.getDailyBudgetForEachDayInMonth(plotParam, this.selectedMonth);
+        this.dailyChartOptions.title.text = plotParam.title;
         this.dailyChart.render();
         break;
 
       case "weeklyWeek":
-        this.weeklyChart.options.data[0].dataPoints = await this.dataService.getWeeklyBudget($event);
-        this.weeklyChartOptions.title.text = $event.title;
+        this.weeklyChart.options.data[0].dataPoints = await this.dataService.getWeeklyBudget(plotParam);
+        this.weeklyChartOptions.title.text = plotParam.title;
         this.weeklyChart.render();
         break;
     }
@@ -219,7 +228,7 @@ export class TestDashComponent implements OnInit, AfterViewInit {
 
   setMonth(title:any, $event: any){
     this.selectedMonth = $event;
-    this.plotData(JSON.parse(title));
+    // this.refreshPlot(JSON.parse(title), "monthly");
   }
 
   plotChart(){

@@ -1,0 +1,40 @@
+.login-container{
+    padding: 23rem;
+}
+.form-field{
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.submit-btn{
+    padding: .5rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid white;
+}
+.submit-btn:hover{
+    cursor: pointer;
+}
+.btn-container{
+    display: flex;
+    justify-content: center;
+}
+img{
+    width: 20%;
+    margin-bottom: 1rem;
+}
+.img-container{
+    display: flex;
+    justify-content: center;
+    margin-top: -15rem;
+}
+.logo{
+    border-radius: 5px;
+}
+
+@media screen and (max-width: 600px)  {
+    .login-container{
+        width: 90%;
+    }
+}

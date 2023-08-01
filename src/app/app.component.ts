@@ -1,5 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatDrawer } from '@angular/material/sidenav';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -11,11 +12,19 @@ export class AppComponent {
 
   drawerOut: boolean = false;
 
+  constructor(private router: Router){
+
+  }
+
   toggleDrawer($drawer:any){
     this.drawer.toggle()
   }
 
   handleDrawerPositionChanged($event: any){
     this.drawerOut = $event
+  }
+
+  handleRoute(route:string){
+    this.router.navigate([route]);
   }
 }

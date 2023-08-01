@@ -44,6 +44,7 @@ export class DataService {
       // });
       // console.log(dataPoints)
       // return dataPoints;
+      console.log(field)
       let dataPoints = await firstValueFrom(this.http.post(this.backendUrl+"monthlyBudget",field
       ))
       return dataPoints

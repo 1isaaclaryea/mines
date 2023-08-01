@@ -15,11 +15,17 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatInputModule } from '@angular/material/input';
+
+import { SettingsComponent } from './components/settings/settings.component';
+import { LoginComponent } from './components/login/login.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TestDashComponent,
+    SettingsComponent,
+    LoginComponent,
   ],
   imports: [
     BrowserModule,
@@ -35,6 +41,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatIconModule,
     MatSelectModule,
     MatTooltipModule,
+    MatInputModule
   ],
   providers: [],
   bootstrap: [AppComponent]
