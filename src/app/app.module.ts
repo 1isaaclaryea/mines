@@ -19,6 +19,7 @@ import { MatInputModule } from '@angular/material/input';
 
 import { SettingsComponent } from './components/settings/settings.component';
 import { LoginComponent } from './components/login/login.component';
+import { DataEntryComponent } from './components/data-entry/data-entry.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +27,7 @@ import { LoginComponent } from './components/login/login.component';
     TestDashComponent,
     SettingsComponent,
     LoginComponent,
+    DataEntryComponent,
   ],
   imports: [
     BrowserModule,
