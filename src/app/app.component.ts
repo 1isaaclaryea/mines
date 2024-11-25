@@ -3,9 +3,10 @@ import { MatDrawer } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css'],
+    standalone: false
 })
 export class AppComponent {
   @ViewChild('drawer') drawer!: MatDrawer;

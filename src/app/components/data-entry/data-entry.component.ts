@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-data-entry',
-  templateUrl: './data-entry.component.html',
-  styleUrls: ['./data-entry.component.css']
+    selector: 'app-data-entry',
+    templateUrl: './data-entry.component.html',
+    styleUrls: ['./data-entry.component.css'],
+    standalone: false
 })
 export class DataEntryComponent implements OnInit {
 

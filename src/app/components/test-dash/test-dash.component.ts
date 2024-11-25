@@ -6,9 +6,10 @@ import { firstValueFrom, lastValueFrom } from 'rxjs'
 
 
 @Component({
-  selector: 'test-dash',
-  templateUrl: './test-dash.component.html',
-  styleUrls: ['./test-dash.component.css']
+    selector: 'test-dash',
+    templateUrl: './test-dash.component.html',
+    styleUrls: ['./test-dash.component.css'],
+    standalone: false
 })
 export class TestDashComponent implements OnInit, AfterViewInit {
   file!:File;
