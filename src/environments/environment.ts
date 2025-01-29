@@ -6,6 +6,8 @@ export const environment = {
   production: false
 };
 
+export const syncfusionLicenseKey = "ORg4AjUWIQA/Gnt2UlhhQlVMfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX9SdENiW3pfc3NQRmhd";
+
 /*
  * For easier debugging in development mode, you can import the following file
  * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.

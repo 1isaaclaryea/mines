@@ -3,7 +3,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": []
+    "types": [],
+    "target": "ES2022",
+    "useDefineForClassFields": false
   },
   "files": [
     "src/main.ts",
@@ -11,5 +13,6 @@
   ],
   "include": [
     "src/**/*.d.ts"
-  ]
+  ],
+  
 }

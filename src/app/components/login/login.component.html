@@ -10,7 +10,16 @@
         <mat-label for="password" class="input-label">Password</mat-label>
         <input matInput type="password" class="password">
     </mat-form-field>
+    <mat-form-field class="form-field">
+        <mat-label>Sector</mat-label>
+        <mat-select [(value)]="selectedDepartment">
+          @for (department of departments; track department) {
+            <mat-option [value]="department.id">{{department.name}}</mat-option>
+          }
+        </mat-select>
+    </mat-form-field>
+      
     <div class="btn-container">
-        <button mat-button routerLink="/" class="submit-btn">Login</button>
+        <button mat-button (click)="login()"  class="submit-btn">Login</button>
     </div>
 </div>

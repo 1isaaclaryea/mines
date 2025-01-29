@@ -1,12 +1,13 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatDrawer } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
+import { MatListModule } from '@angular/material/list';
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
-    standalone: false
+    standalone: false,
 })
 export class AppComponent {
   @ViewChild('drawer') drawer!: MatDrawer;

@@ -24,7 +24,13 @@
                 
             </div>
         </div>
-        <canvasjs-chart style="width: 100%; margin-bottom: 2rem" [options]="summaryChartOptions" (chartInstance)="getSummaryChartInstance($event)"></canvasjs-chart>
+        <ejs-chart #summaryChart id="chart-container" [primaryXAxis]='summaryXAxis' [primaryYAxis]='summaryYAxis'>
+            <e-series-collection>
+                <e-series [dataSource]='summaryDataPoints' type='Line' xName='label' yName='y' name='Monthly Summary'></e-series>
+            </e-series-collection>
+        </ejs-chart>
+        
+        <!-- <canvasjs-chart style="width: 100%; margin-bottom: 2rem" [options]="summaryChartOptions" (chartInstance)="getSummaryChartInstance($event)"></canvasjs-chart> -->
     </div>
     <div style="display: flex;">
         <div style="width: 50%; margin-right: 3rem;" id="dailyCharts">
@@ -56,8 +62,12 @@
                     </mat-select>
                 </mat-form-field>
             </div>
-
-            <canvasjs-chart [options]="dailyChartOptions" (chartInstance)="getDailyChartInstance($event)"></canvasjs-chart>
+            <ejs-chart #dailyChart id="daily-chart-container" [primaryXAxis]='dailyXAxis' [primaryYAxis]='dailyYAxis'>
+                <e-series-collection>
+                    <e-series [dataSource]='dailyDataPoints' type='Line' xName='label' yName='y' name='Daily data'></e-series>
+                </e-series-collection>
+            </ejs-chart>
+            <!-- <canvasjs-chart [options]="dailyChartOptions" (chartInstance)="getDailyChartInstance($event)"></canvasjs-chart> -->
         </div>
         <div style="width: 50%;" id="weeklyCharts">
             <div class="controls">    
@@ -69,9 +79,16 @@
                 </mat-form-field>
                 <div><h1>Weekly data (individual weeks)</h1></div>
             </div>
-            <canvasjs-chart  [options]="weeklyChartOptions" (chartInstance)="getWeeklyChartInstance($event)"></canvasjs-chart>
+            <ejs-chart #weeklyChart id="weekly-chart-container" [primaryXAxis]='weeklyXAxis' [primaryYAxis]='weeklyYAxis'>
+                <e-series-collection>
+                    <e-series [dataSource]='weeklyDataPoints' type='Line' xName='label' yName='y' name='Weekly data'></e-series>
+                </e-series-collection>
+            </ejs-chart>
+            <!-- <canvasjs-chart  [options]="weeklyChartOptions" (chartInstance)="getWeeklyChartInstance($event)"></canvasjs-chart> -->
         </div>
     </div>
+    <button ej-button mat-fab extended (click)="export()">Generate report</button>
+
 </div>
 
 <!-- <div class="cols">

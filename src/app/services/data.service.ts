@@ -12,7 +12,7 @@ export interface TITLE {
   providedIn: 'root'
 })
 export class DataService {
-  private _workBook!: exceljs.Workbook;
+  private _workBook: exceljs.Workbook = new exceljs.Workbook;
   private letters: string[] = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z".split(" ");
   private numbers: number[] = [0,1,2,3,4,5,6,7,8,9];
   private months: string[] = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
@@ -44,14 +44,14 @@ export class DataService {
       // });
       // console.log(dataPoints)
       // return dataPoints;
-      console.log(field)
+      // console.log(field)
       let dataPoints = await firstValueFrom(this.http.post(this.backendUrl+"monthlyBudget",field
       ))
       return dataPoints
   }
 
   private getColumnNumberFromLetter(letter: string){
-   return this.workBook.getWorksheet('BUDGET CALC').getColumn(letter).number
+   return this.workBook.getWorksheet('BUDGET CALC')!.getColumn(letter).number
   }
 
   /**
@@ -184,12 +184,13 @@ export class DataService {
 
   // To be clarified
   getWeeklyBudgetForEachDayInMonth(field:TITLE, month: string) {
-    const row = this.workBook.getWorksheet('BUDGET CALC').getRow(field.rn);
+    const row = this.workBook.getWorksheet('BUDGET CALC')?.getRow(field.rn);
     let dataPoints: { label: string; y: string | number | Date; }[] = [];
     let colRange = this.getDailyMonthsColums(month);
+    let columnNumberFromLetter : number = this.getColumnNumberFromLetter(colRange[1]);
     let counter = 0;
-    row.eachCell((cell, cn) => {
-      if(cn == this.getColumnNumberFromLetter(colRange[0]) && cn <= this.getColumnNumberFromLetter(colRange[1])){
+    row?.eachCell((cell, cn) => {
+      if(cn == this.getColumnNumberFromLetter(colRange[0]) && cn <= columnNumberFromLetter){
         let dataPoint = { label: this.months[cn-2],  y: cell.result };
         dataPoints.push(dataPoint);
       } 

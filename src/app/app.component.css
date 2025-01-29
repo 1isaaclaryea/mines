@@ -34,4 +34,16 @@
     align-items: center;
     margin-bottom: 1rem;
 }
+
+/* Add responsive adjustments */
+@media screen and (max-width: 600px) {
+    .main-content {
+        padding: 1rem;
+        margin-top: 3rem;
+    }
+    
+    .menu-bar {
+        padding: .25rem 1rem;
+    }
+}
   
