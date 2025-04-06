@@ -7,9 +7,9 @@ import * as XLSX from 'xlsx';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { ApproveDialogComponent } from '../approve-dialog/approve-dialog.component';
-import { CellModel, getCell, SpreadsheetComponent } from '@syncfusion/ej2-angular-spreadsheet';
+import { CellModel, getCell, SpreadsheetComponent, workbookReadonlyAlert } from '@syncfusion/ej2-angular-spreadsheet';
 import { DataService } from 'src/app/services/data.service';
-
+import * as ExcelJS from 'exceljs';
 
 
 @Component({
@@ -59,17 +59,18 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
     this.baseFile$ = this.dataService.getFileData$(sectionId!);
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     if (!localStorage.getItem("token")) {
       this.router.navigate(['/login']);
       return;
     }
     this.getInitialWorkbookData();    
     // setTimeout(this.loadExistingData,1000*60*20);
-    this.loadExistingData();
+    // this.loadExistingData();
   }
 
   async ngAfterViewInit(): Promise<void> {
+    // this.loadExistingData();
   }
 
   ngOnDestroy() {
@@ -110,8 +111,7 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
       error: err => console.error('Observable emitted an error: ' + err),
       complete: () => {
         let file: File = new File([this.tmpFileData], 'Worksheet.xlsx');
-        this.spreadsheetObj!.open({ file: file });
-        // this.loadExistingData();
+        this.loadExistingData(file);
       }
     })
   }
@@ -126,7 +126,7 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private async loadExistingData(): Promise<any> {
+  private async loadExistingData(baseFile: File): Promise<any> {
     console.log("Loading data...");
 
     try {
@@ -142,26 +142,52 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
         // console.log("Loading data...");
         this.dataStatus = response[0].status;
         this.currentEntryId = response[0]._id;
-        
-        // Populate spreadsheet with existing data
         const data = response[0].data;
-        
-        Object.keys(data).forEach((objectName, colIndex) => {
-          if(data[objectName].values) {
-            const values = data[objectName].values;
-            console.log(values);
-            values.forEach((entry: any) => {
-              // consider using get time slots function
-              const rowIndex = ["6","7","8","9","10","11","12","13","14","15","16","17","18"].indexOf(entry.time);
-              if (rowIndex !== -1) {
-                const sheet = this.spreadsheetObj.getActiveSheet();
-                // let cell: CellModel = getCell(6 + rowIndex, 3 + colIndex, sheet);
-                // Entry point. Look into update cell and ensure that cells are populated with submitted data
-                this.spreadsheetObj.updateCell({value: entry.value}, this.alphabets[colIndex+3]+(rowIndex+7).toString());
-              }
+
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(baseFile);
+        reader.onload = () => {
+          const buffer = reader.result as any;
+          const workbook = new ExcelJS.Workbook();
+          workbook.xlsx
+            .load(buffer)
+            .then(() => {
+              const worksheet = workbook.worksheets[0];
+
+              Object.keys(data).forEach((objectName, colIndex) => {
+                if(data[objectName].values) {
+                  const values = data[objectName].values;
+                  console.log(values);
+                  values.forEach((entry: any) => {
+                    // consider using get time slots function
+                    const rowIndex = ["6","7","8","9","10","11","12","13","14","15","16","17","18"].indexOf(entry.time);
+                    if (rowIndex !== -1) {
+                      worksheet.getCell(this.alphabets[colIndex+3]+(rowIndex+7).toString()).value = entry.value;
+                      // const sheet = this.spreadsheetObj.getActiveSheet();
+                      // let cell: CellModel = getCell(6 + rowIndex, 3 + colIndex, sheet);
+                      // Entry point. Look into update cell and ensure that cells are populated with submitted data
+                      // this.spreadsheetObj.updateCell({value: entry.value}, this.alphabets[colIndex+3]+(rowIndex+7).toString());
+                    }
+                  });
+                }
+              });
+              // console.log(worksheet)
+            })
+            .catch((error) => {
+              console.log(error)
             });
           }
-        });
+
+
+        // Populate spreadsheet with existing data
+        // const workbook = new ExcelJS.Workbook();
+        // await workbook.xlsx.readFile(baseFile.name);
+        // console.log(baseFile.name);
+
+        // const worksheet = workbook.worksheets[0];
+
+        
+        this.spreadsheetObj!.open({ file: baseFile });
       }
       return null;
     } catch (error) {

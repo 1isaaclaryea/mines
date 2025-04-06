@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/common/http'
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
@@ -40,6 +40,7 @@ import { ApproveDialogComponent } from './components/approve-dialog/approve-dial
 import { DropDownListModule } from '@syncfusion/ej2-angular-dropdowns';
 import { SpreadsheetAllModule } from '@syncfusion/ej2-angular-spreadsheet';
 import { SpreadsheetComponent } from '@syncfusion/ej2-angular-spreadsheet';
+import { tokenInterceptor } from './interceptors/token.interceptor';
 
 @NgModule({
   declarations: [
@@ -93,6 +94,7 @@ import { SpreadsheetComponent } from '@syncfusion/ej2-angular-spreadsheet';
     CategoryService, 
     RadarSeriesService, 
     SplineSeriesService,
+    provideHttpClient(withInterceptors([tokenInterceptor]))
   ],
   bootstrap: [AppComponent]
 })
