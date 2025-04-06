@@ -1,0 +1,116 @@
+.accounts-container {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.new-user-form {
+  .form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+
+  button {
+    min-width: 150px;
+  }
+}
+
+.users-list {
+  overflow-x: auto;
+  
+  table {
+    width: 100%;
+    margin-top: 16px;
+    min-width: 800px;
+  }
+
+  .mat-column-actions {
+    width: 60px;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .mat-column-status {
+    width: 100px;
+    min-width: 100px;
+  }
+
+  .mat-column-phoneNumber {
+    width: 120px;
+    min-width: 120px;
+  }
+
+  .mat-column-email {
+    min-width: 180px;
+  }
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-block;
+    
+    &.active {
+      background-color: #4CAF50;
+      color: white;
+    }
+    
+    &.inactive {
+      background-color: #f44336;
+      color: white;
+    }
+  }
+
+@media (max-width: 1200px) {
+  .accounts-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Material table styles */
+.mat-mdc-table {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.mat-mdc-header-cell {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.mat-mdc-cell {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.mat-mdc-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.mat-card-content {
+  padding: 16px;
+  overflow-x: auto;
+}

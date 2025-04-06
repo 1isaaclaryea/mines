@@ -1,7 +1,10 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { MatDrawer } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
+import { ApiService } from './services/api.service';
+import { registerLicense } from '@syncfusion/ej2-base';
+import { environment } from '../environments/environment';
 
 @Component({
     selector: 'app-root',
@@ -9,13 +12,19 @@ import { MatListModule } from '@angular/material/list';
     styleUrls: ['./app.component.css'],
     standalone: false,
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   @ViewChild('drawer') drawer!: MatDrawer;
 
   drawerOut: boolean = false;
 
-  constructor(private router: Router){
+  constructor(private router: Router, private apiService: ApiService){
 
+  }
+
+  ngOnInit() {
+    // Register license at component level
+    registerLicense(environment.syncfusionLicenseKey);
+    
   }
 
   toggleDrawer($drawer:any){
@@ -27,6 +36,17 @@ export class AppComponent {
   }
 
   handleRoute(route:string){
+    // implement logout functionality
     this.router.navigate([route]);
+  }
+
+  get isAdmin(): boolean {
+    return localStorage.getItem('userIsAdmin') === 'true';
+  }
+
+  logout(){
+    this.apiService.logout().then(() => {
+      this.router.navigate(['/login']);
+    });
   }
 }

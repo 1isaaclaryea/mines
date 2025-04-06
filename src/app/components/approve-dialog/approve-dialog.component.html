@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Confirm {{data.mode === 'reject' ? 'Rejection' : 'Approval'}}</h2>
+    <mat-dialog-content>
+      Are you sure you want to {{data.mode === 'reject' ? 'reject' : 'approve'}} this data entry?
+      <p class="warning">This action cannot be undone.</p>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button 
+        mat-raised-button 
+        [color]="data.mode === 'reject' ? 'warn' : 'primary'"
+        [mat-dialog-close]="true">
+        <mat-icon>{{data.mode === 'reject' ? 'cancel' : 'check_circle'}}</mat-icon>
+        {{data.mode === 'reject' ? 'Reject' : 'Approve'}}
+      </button>
+    </mat-dialog-actions>

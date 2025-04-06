@@ -1,0 +1,14 @@
+mat-dialog-content {
+    margin: 20px 0;
+  }
+  .warning {
+    color: #f44336;
+    font-size: 0.9em;
+    margin-top: 10px;
+  }
+  mat-dialog-actions {
+    gap: 8px;
+  }
+  button mat-icon {
+    margin-right: 4px;
+  }

@@ -1,72 +1,29 @@
-.cols {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding: 1rem;
+.chart-container {
+  padding: 20px;
+  color: white;
 }
 
-.graphs {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 3rem;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto 3rem;
+.parameter-selector {
+  margin-bottom: 20px;
+  width: 200px;
 }
 
-.controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding: 1rem;
+::ng-deep text{
+  color: white;
 }
 
-/* Style for the heading in controls */
-.controls h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    white-space: nowrap;
+/* ::ng-deep .e-dropdownlist {
+  color: white !important;
+} */
+
+::ng-deep .e-input-group {
+  color: white !important;
 }
 
-/* Ensure form fields don't grow too large */
-.controls mat-form-field {
-    min-width: 150px;
-    max-width: 200px;
-}
+/* ::ng-deep .e-list-item {
+  color: white !important;
+} */
 
-@media screen and (max-width: 768px) {
-    .cols {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .graphs {
-        margin-bottom: 2rem;
-    }
-    
-    .controls {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .controls h1 {
-        order: -1; /* Move title to top on mobile */
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .cols {
-        padding: 0.5rem;
-    }
-    
-    .controls {
-        padding: 0.5rem;
-    }
-    
-    .graphs {
-        margin-bottom: 1.5rem;
-    }
+::ng-deep .e-ddl .e-input[readonly] {
+  color: white !important;
 }

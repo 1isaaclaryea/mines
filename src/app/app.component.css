@@ -35,6 +35,20 @@
     margin-bottom: 1rem;
 }
 
+.nav-item {
+    display: flex;
+    align-items: center;
+    /* justify-content: center; */
+}
+
+.nav-icon {
+    margin-right: 12px;
+}
+
+.nav-text {
+    margin-left: 8px;
+}
+
 /* Add responsive adjustments */
 @media screen and (max-width: 600px) {
     .main-content {

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import * as exceljs from "exceljs";
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 
 export interface TITLE {
   title: string,
@@ -17,7 +17,7 @@ export class DataService {
   private numbers: number[] = [0,1,2,3,4,5,6,7,8,9];
   private months: string[] = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 
-  private backendUrl = "http://localhost:8080/"
+  private backendUrl = "http://localhost:5000/"
   constructor(private http: HttpClient) { }
 
   public get workBook() : exceljs.Workbook {
@@ -84,6 +84,11 @@ export class DataService {
       {title: "Gravity Recovered Au (ozs)", rn: 43},
       {title: "Gold Recovery (%)", rn: 43},
     ]
+  }
+
+  getFileData$(fileId:number): Observable<Blob>{
+    return this.http.get(this.backendUrl+"file/"+fileId.toString(), { responseType: 'blob'});
+    // console.log(file);
   }
 
   async getQuarterlyBudget(field:TITLE) {

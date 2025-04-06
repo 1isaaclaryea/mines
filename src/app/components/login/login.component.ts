@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { ApiService } from 'src/app/services/api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
     selector: 'app-login',
@@ -9,38 +12,39 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent implements OnInit {
   departments: {id:number, name:string}[] = [
-    {id:1, name:"Acacia"},
-    {id:2, name:"ElutionCircuit"},
-    {id:3, name:"ElutionCircuitNew"},
-    {id:4, name:"Flotation"},
-    {id:5, name:"FlotationConcentrateThickener"},
-    {id:6, name:"FlotationConcentrateThickenerRegrindMill"},
-    {id:7, name:"KNelson"},
-    {id:8, name:"Milling"},
-    {id:9, name:"OxideCrusher"},
-    {id:10, name:"OxygenSparginMonitoring"},
-    {id:11, name:"PlantDowntime"},
-    {id:12, name:"PrimaryCrusher"},
-    {id:13, name:"PrimaryCrusherDowntime"},
-    {id:14, name:"Reagent"},
-    {id:15, name:"RegenKiln"},
-    {id:16, name:"Sewage"},
-    {id:17, name:"SteelBalls"},
-    {id:18, name:"Tank01MonitoringParameters"}
-  ];
+    {id:1, name:"CIL Plant Monitoring"},
+    {id:2, name:"Crushing Shift Tonnes"},
+    {id:3, name:"SAG01 Mill"}
+  ]
 
-  selectedDepartment = 12;
-  constructor(private router:Router) {
-    let localData = localStorage.getItem('selectedDepartmentId');
-    if(localData) this.selectedDepartment = this.departments[parseInt(localData)-1].id;
+  selectedDepartment = 1;
+  constructor(private router:Router, private apiService: ApiService, private snackBar: MatSnackBar) {
   }
 
   ngOnInit(): void {
   }
 
-  login(){
-    localStorage.setItem("selectedDepartmentId",this.selectedDepartment.toString());
-    this.router.navigate(['/data-entry']);
+  async login(email: string, password: string){
+    try {
+      const response = await firstValueFrom(this.apiService.login({email, password}));
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('userSection', response.user.section);
+      localStorage.setItem('userRole', response.user.role);
+      localStorage.setItem('userIsAdmin', response.user.isAdmin);
+      localStorage.setItem('userId', response.user._id);
+      if (response.user.role === 'admin') {
+        this.router.navigate(['/accounts']);
+      } else {
+        this.router.navigate(['/data-entry']); 
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      this.snackBar.open('Invalid email or password', 'Close', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top'
+      });
+    }
   }
 
 }

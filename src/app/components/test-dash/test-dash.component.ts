@@ -4,6 +4,8 @@ import * as exceljs from "exceljs";
 import { DataService } from 'src/app/services/data.service';
 import { firstValueFrom, lastValueFrom } from 'rxjs'
 import { Chart, ChartComponent } from '@syncfusion/ej2-angular-charts';
+import { ApiService } from 'src/app/services/api.service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -13,301 +15,116 @@ import { Chart, ChartComponent } from '@syncfusion/ej2-angular-charts';
     standalone: false
 })
 export class TestDashComponent implements OnInit, AfterViewInit {
-  public chartData: Object[];
+  @ViewChild('chart') chart!: ChartComponent;
   
-  public summaryXAxis?: Object;
-  public dailyXAxis?: Object;
-  public weeklyXAxis?: Object;
-  public summaryYAxis?: Object;
-  public dailyYAxis?: Object;
-  public weeklyYAxis?: Object;
+  public chartData: any[] = [];
+  public selectedParameter: string = '';
+  public parameters: string[] = [];
+  public chartOptions: any;
+  public palette?: string[] = ["#E94649", "#F6B53F", "#6FAAB0", "#C4C24A"];
+  public chartArea?: Object = { background: 'grey'};
 
-
-  @ViewChild('summaryChart') summaryChartComponent?: ChartComponent;
-  @ViewChild('dailyChart') dailyChartComponent?: ChartComponent;
-  @ViewChild('weeklyChart') weeklyChartComponent?: ChartComponent;
-
-
-  file!:File;
-  arrayBuffer:any;
-  fileList: any;
-
-  monthlyData: any;
-  summaryChart: any;
-  weeklyChart: any;
-  dailyChart: any;
-  titles: any[] = [];
-
-  dataPoints:any;
-  summaryDataPoints: any;
-  dailyDataPoints: any;
-  weeklyDataPoints: any;
-
-  // later change to Enum/interface for period
-  period: "summary" | "daily" | "weeklyMonth" | "weeklyWeek" = "summary";
-  summaryType: "monthly" | "quarterly" | "yearToDate" | "daily" = "monthly";
-  selectedMonth:
-    "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec"
-    = "Jan";
-
-  summaryChartOptions = {
-    theme:"dark2",
-    title: {
-      text: "Dry tonnes"
-    },
-    data: [{
-    type: "line",
-    dataPoints: [  ]
-    }]
-  }
-
-  dailyChartOptions = {
-    theme:"dark2",
-    title: {
-      text: "Dry tonnes"
-    },
-    data: [{
-    type: "line",
-    dataPoints: [  ]
-    }]
-  }
-
-  weeklyChartOptions = {
-    theme:"dark2",
-    title: {
-      text: "Dry tonnes"
-    },
-    data: [{
-    type: "line",
-    dataPoints: [  ]
-    }]
-  }
-
-  constructor(private dataService: DataService, private httpClient: HttpClient) { 
-    this.titles = this.dataService.getFields();
-    this.chartData = [
-      { month: 'Jan', sales: 35 }, { month: 'Feb', sales: 28 },
-      { month: 'Mar', sales: 34 }, { month: 'Apr', sales: 32 },
-      { month: 'May', sales: 40 }, { month: 'Jun', sales: 32 },
-      { month: 'Jul', sales: 35 }, { month: 'Aug', sales: 55 },
-      { month: 'Sep', sales: 38 }, { month: 'Oct', sales: 30 },
-      { month: 'Nov', sales: 25 }, { month: 'Dec', sales: 32 }
-    ];
-    this.summaryXAxis = {
-      interval: 1,
-      valueType: 'Category',
-    };
-    this.summaryYAxis =
-    {
-      title: 'Dry Tonnes (T)',
-    };
-  }
+  constructor(
+    private dataService: DataService, 
+    private apiService: ApiService, 
+    private httpClient: HttpClient,
+    private router: Router
+  ) { }
 
   async ngOnInit(): Promise<void> {
-    this.dataPoints = await this.dataService.getMonthlyBudget({title: "Dry Tonnes (t)", rn: 8});
-    this.summaryDataPoints = await this.dataService.getMonthlyBudget({title: "Dry Tonnes (t)", rn: 8});
-    this.dailyDataPoints = await this.dataService.getDailyBudgetForEachDayInMonth({title: "Dry Tonnes (t)", rn: 8}, this.selectedMonth);
-    this.weeklyDataPoints = await this.dataService.getWeeklyBudget({title: "Dry Tonnes (t)", rn: 8});
-    // console.log(this.dailyDataPoints)
-    // console.log(this.weeklyDataPoints)
+    if (!localStorage.getItem("token")) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    try {
+      const todayData = await this.apiService.getTodayDataEntry('cil');
+      
+      // Get parameters for dropdown
+      this.parameters = Object.keys(todayData).filter(key => key !== 'timestamp');
+      
+      // Set default selected parameter
+      if (this.parameters.length > 0) {
+        this.selectedParameter = this.parameters[0];
+        this.updateChart(todayData[this.selectedParameter].values);
+      }
+    } catch (error) {
+      console.error('Error fetching today\'s data:', error);
+    }
+  }
+
+  updateChart(values: any[]): void {
+    this.chartData = values.map(item => ({
+      x: item.time,
+      y: item.value
+    }));
+
+    this.chartOptions = {
+      primaryXAxis: {
+        valueType: 'Category',
+        title: 'Time',
+        labelStyle: {
+          color: 'white'
+        }
+      },
+      primaryYAxis: {
+        title: this.selectedParameter,
+        labelStyle: {
+          color: 'white'
+        }
+      },
+      series: [{
+        type: 'Line',
+        dataSource: this.chartData,
+        xName: 'x',
+        yName: 'y',
+        width: 2,
+        marker: {
+          visible: true,
+          width: 7,
+          height: 7
+        }
+      }]
+    };
+  }
+
+  onParameterChange(event: any): void {
+    this.selectedParameter = event.value;
+    const todayData = this.apiService.getTodayDataEntry('cil').then(data => {
+      this.updateChart(data[this.selectedParameter].values);
+    });
   }
 
   async ngAfterViewInit(): Promise<void> {
-    // this.summaryChart.options.data[0].dataPoints = await this.dataService.getMonthlyBudget({title: "Dry Tonnes (t)", rn: 8});
-    // this.summaryChart.render();
-
-    // this.dailyChart.options.data[0].dataPoints = await this.dataService.getDailyBudgetForEachDayInMonth({title: "Dry Tonnes (t)", rn: 8}, this.selectedMonth);
-    // this.dailyChart.render();
-
-    // this.weeklyChart.options.data[0].dataPoints = await this.dataService.getWeeklyBudget({title: "Dry Tonnes (t)", rn: 8});
-    // this.weeklyChart.render();
-
-    // console.log(this.dataPoints)
   }
 
-  getSummaryChartInstance($chart:any){
-    console.log("Initialized")
-    this.summaryChart = $chart;
+  refreshPlot(title: string, summaryType: string): void {
+    console.log('Refreshing plot with title:', title, 'and summary type:', summaryType);
   }
 
-  getWeeklyChartInstance($chart:any){
-    this.weeklyChart = $chart;
+  exportData(): void {
+    console.log('Exporting data');
   }
 
-  getDailyChartInstance($chart:any){
-    this.dailyChart = $chart;
+  printChart(){
+    this.chart.print();
   }
 
   export() {
     const header = {
-        content: 'Chart Header',
-        fontSize: 15
+        content: "Mining company report",
+        fontSize: 15,
+        x:50,
+        y:10
     };
 
     const footer = {
         content: 'Chart Footer',
         fontSize: 15,
+        x:50,
+        y:10
     };
-    this.summaryChartComponent?.exportModule.export('PDF', `${new Date().toJSON().slice(0, 10)}-Report`, 'Landscape' as any , [this.summaryChartComponent as Chart, this.dailyChartComponent as Chart, this.weeklyChartComponent as Chart], undefined, undefined, true, undefined, undefined, true);
+    this.chart.exportModule.export('PDF', 'Chart', 1, [this.chart as ChartComponent], undefined, undefined, false, header, footer, false);
   }
-
-  async plotData(_title: any, dataGroup?: any){
-    // console.log(_title)
-    // this.chart.options.data[0].type = "line";
-
-    if(this.period == "summary"){
-      if(dataGroup == "monthly") {
-        // this.summaryChart.options.data[0].dataPoints = 
-        // await this.dataService.getMonthlyBudget(_title);
-      }
-      if(dataGroup == "quarterly") {
-        // this.summaryChart.options.data[0].dataPoints = 
-        // await this.dataService.getQuarterlyBudget(_title);
-      }
-      if(dataGroup == "yearToDate") {
-        // this.summaryChart.options.data[0].dataPoints = 
-        // await this.dataService.getYearToDateMonthlyBudget(_title);
-      }
-      if(dataGroup == "daily") {
-        // this.summaryChart.options.data[0].dataPoints = 
-        // await this.dataService.getDailyBudgetForEachMonth(_title);
-      }
-    }
-
-    if(this.period == "daily"){
-      // this.summaryChart.options.data[0].dataPoints = 
-      //   await this.dataService.getDailyBudgetForEachDayInMonth(_title, this.selectedMonth);
-    }
-
-    if(this.period == "weeklyWeek"){
-      // this.summaryChart.options.data[0].dataPoints = 
-      //  await this.dataService.getWeeklyBudget(_title);
-    }
-
-    // this.chartOptions.title.text = _title.title;
-    // this.summaryChart.render();
-  }
-
-  log($event:any, plotType?:any){
-    // this.plotData(JSON.parse($event), plotType?plotType:this.summaryType)
-  }
-
-  async refreshPlot($event:any, plotType:any){
-    let plotParam = JSON.parse($event);
-    switch (plotType) {
-      case "summary":
-        if(this.summaryType == "monthly") {
-          console.log(await this.dataService.getMonthlyBudget($event));
-          this.summaryDataPoints = await this.dataService.getMonthlyBudget($event);
-          // this.summaryChart.options.data[0].dataPoints = 
-          // await this.dataService.getMonthlyBudget(plotParam);
-          
-        }
-        if(this.summaryType == "quarterly") {
-          // this.summaryChart.options.data[0].dataPoints = 
-          // await this.dataService.getQuarterlyBudget(plotParam);
-          console.log(this.dataService.getQuarterlyBudget(plotParam));
-          this.summaryDataPoints = await this.dataService.getQuarterlyBudget(plotParam);
-
-        }
-        if(this.summaryType == "yearToDate") {
-          // this.summaryChart.options.data[0].dataPoints = 
-          // await this.dataService.getYearToDateMonthlyBudget(plotParam);
-          console.log(this.dataService.getYearToDateMonthlyBudget(plotParam));
-          this.summaryDataPoints = await this.dataService.getYearToDateMonthlyBudget(plotParam);
-
-        }
-        if(this.summaryType == "daily") {
-          // this.summaryChart.options.data[0].dataPoints = 
-          // await this.dataService.getDailyBudgetForEachMonth(plotParam);
-          console.log(this.dataService.getDailyBudgetForEachMonth(plotParam));
-          this.summaryDataPoints = await this.dataService.getDailyBudgetForEachMonth(plotParam);
-
-        }
-        // this.summaryChartOptions.title.text = plotParam.title;
-        // this.summaryChart.render();
-        break;
-
-      case "daily":
-        // this.dailyChart.options.data[0].dataPoints = await this.dataService.getDailyBudgetForEachDayInMonth(plotParam, this.selectedMonth);
-        this.dailyDataPoints = await this.dataService.getDailyBudgetForEachDayInMonth(plotParam, this.selectedMonth);
-        // this.dailyChartOptions.title.text = plotParam.title;
-        // this.dailyChart.render();
-        break;
-
-      case "weeklyWeek":
-        // this.weeklyChart.options.data[0].dataPoints = await this.dataService.getWeeklyBudget(plotParam);
-        this.weeklyDataPoints = await this.dataService.getWeeklyBudget(plotParam);
-        // this.weeklyChartOptions.title.text = plotParam.title;
-        // this.weeklyChart.render();
-        break;
-    }
-  }
-
-  changeSummaryType($event: any){
-    this.summaryType = $event;
-  }
-
-  async loadFile($event: any, path:string){
-    const wb = new exceljs.Workbook();
-    let fileReader = new FileReader();  
-    let fileReader1 = new FileReader();  
-
-    if(!$event){
-      let fileData = await lastValueFrom(this.httpClient.get(path, {responseType: "blob"}))
-      console.log(fileData)
-      fileReader1.onload = (async () => {
-        console.log(fileData)
-        fileReader1.readAsArrayBuffer(fileData);
-
-        this.arrayBuffer = fileReader1.result;   
-        console.log(this.arrayBuffer) 
-        var dataBuffer = new Uint8Array(this.arrayBuffer);    
-        console.log(dataBuffer)
-        let workBook = await wb.xlsx.load(dataBuffer);
-        this.dataService.workBook = workBook;
-        this.plotData({title: "Dry Tonnes (t)", rn: 8}, "monthly");
-        console.log("File loaded successfully!");
-      })
-    }
-    else{
-      fileReader.onload = (async () => {    
-        this.file = $event.target.files[0];   
-        fileReader.readAsArrayBuffer(this.file);
-
-        this.arrayBuffer = fileReader.result;    
-        var data = new Uint8Array(this.arrayBuffer);    
-
-        let workBook = await wb.xlsx.load(data);
-        this.dataService.workBook = workBook;
-        this.plotData({title: "Dry Tonnes (t)", rn: 8}, "monthly");
-        console.log("File loaded successfully!");
-    })
-    }    
-  }
-
-  setPeriod($event: any, title?:any){
-    this.period = $event.target.value;
-    // this.plotData(JSON.parse(title));
-  }
-
-  setMonth(title:any, $event: any){
-    this.selectedMonth = $event;
-    // this.refreshPlot(JSON.parse(title), "monthly");
-  }
-
-  plotChart(){
-    // if(this.summaryChart) this.plotData({title: "Dry Tonnes (t)", rn: 8}, "monthly");
-  }
-
-  changeGraph($event:any){
-    // this.summaryChart.options.data[0].type = $event.target.value;
-    // this.summaryChart.render();
-  }
-
-  changeTheme($event:any){
-    // this.chartOptions.theme = $event.target.value;
-    // this.summaryChart.render();
-  }
+  
 
 }

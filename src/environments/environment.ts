@@ -3,10 +3,12 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  apiUrl: 'http://localhost:5000/api',
+  syncfusionLicenseKey: 'Ngo9BigBOggjHTQxAR8/V1NMaF1cWWhIfEx1RHxQdld5ZFRHallYTnNWUj0eQnxTdEBjW39bcXdWR2BcV012Xw=='
 };
 
-export const syncfusionLicenseKey = "ORg4AjUWIQA/Gnt2UlhhQlVMfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX9SdENiW3pfc3NQRmhd";
+
 
 /*
  * For easier debugging in development mode, you can import the following file

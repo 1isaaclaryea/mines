@@ -3,23 +3,23 @@
         <img class="logo" src="./assets/logo.png" alt="" srcset="">
     </div>
     <mat-form-field class="form-field">
-        <mat-label for="username" class="input-label">Username</mat-label>
-        <input matInput type="text" class="username">
+        <mat-label for="email" class="input-label">Email</mat-label>
+        <input matInput type="email" class="email" #email>
     </mat-form-field>
     <mat-form-field class="form-field">
         <mat-label for="password" class="input-label">Password</mat-label>
-        <input matInput type="password" class="password">
+        <input matInput type="password" class="password" #password>
     </mat-form-field>
-    <mat-form-field class="form-field">
+    <!-- <mat-form-field class="form-field">
         <mat-label>Sector</mat-label>
         <mat-select [(value)]="selectedDepartment">
           @for (department of departments; track department) {
             <mat-option [value]="department.id">{{department.name}}</mat-option>
           }
         </mat-select>
-    </mat-form-field>
+    </mat-form-field> -->
       
     <div class="btn-container">
-        <button mat-button (click)="login()"  class="submit-btn">Login</button>
+        <button mat-button (click)="login(email.value, password.value)" class="submit-btn">Login</button>
     </div>
 </div>

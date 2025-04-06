@@ -1,143 +1,32 @@
-<div class="graphs">
-    <div id="sumaryChart" style="margin-bottom: 5rem;">
-        <div class="controls">
-            <div>
-                <mat-form-field>
-                    <mat-label>Dry tonnes</mat-label>
-                    <mat-select #titleList (selectionChange)="refreshPlot(titleList.value, 'summary')" name="Titles" id="titles">
-                        <mat-option *ngFor="let _title of titles" [value]="_title | json">{{_title.title}}</mat-option>
-                    </mat-select>     
-                  </mat-form-field>
-                   
-            </div>
-            <div><h1>Summary data</h1></div>
-            <div>
-                <mat-form-field>
-                    <mat-label>Monthly budget</mat-label>
-                    <mat-select #summaryType (selectionChange)="changeSummaryType(summaryType.value)" name="summaryType" id="summaryType">
-                        <mat-option value="monthly">Monthly budget</mat-option>
-                        <mat-option value="quarterly">Quarterly budget</mat-option>
-                        <mat-option value="yearToDate">Year-to-date budget (monthly)</mat-option>
-                        <mat-option value="daily">Daily budget (monthly)</mat-option>
-                    </mat-select>     
-                </mat-form-field>
-                
-            </div>
-        </div>
-        <ejs-chart #summaryChart id="chart-container" [primaryXAxis]='summaryXAxis' [primaryYAxis]='summaryYAxis'>
-            <e-series-collection>
-                <e-series [dataSource]='summaryDataPoints' type='Line' xName='label' yName='y' name='Monthly Summary'></e-series>
-            </e-series-collection>
-        </ejs-chart>
-        
-        <!-- <canvasjs-chart style="width: 100%; margin-bottom: 2rem" [options]="summaryChartOptions" (chartInstance)="getSummaryChartInstance($event)"></canvasjs-chart> -->
-    </div>
-    <div style="display: flex;">
-        <div style="width: 50%; margin-right: 3rem;" id="dailyCharts">
-            <div class="controls">
-                <mat-form-field>
-                    <mat-label>Dry tonnes</mat-label>
-                    <mat-select #dailyTitleList (selectionChange)="refreshPlot(dailyTitleList.value, 'daily')" name="monthlyTitles" id="monthlyTitles">
-                        <mat-option *ngFor="let _title of titles" [value]="_title | json">{{_title.title}}</mat-option>
-                    </mat-select>     
-                </mat-form-field>
+<div class="chart-container">
+  <div class="parameter-selector">
+    <ejs-dropdownlist 
+      [dataSource]='parameters'
+      [(value)]='selectedParameter'
+      (change)='onParameterChange($event)'>
+    </ejs-dropdownlist>
+  </div>
+  
+  <ejs-chart #chart 
+    class="chart"
+    [primaryXAxis]='chartOptions?.primaryXAxis'
+    [primaryYAxis]='chartOptions?.primaryYAxis'
+    width='100%'
+    height='400px'
+    [title]="selectedParameter"
+    [palettes]='palette'>
 
-                <div><h1>Daily data</h1></div>
+    <e-series-collection>
+      <e-series 
+        [dataSource]='chartData'
+        type='Line'
+        xName='x'
+        yName='y'
+        width=2
+        [marker]='chartOptions?.series[0].marker'>
+      </e-series>
+    </e-series-collection>
+  </ejs-chart>
 
-                <mat-form-field>
-                    <mat-label>January</mat-label>
-                    <mat-select #months (selectionChange)="setMonth(dailyTitleList.value, months.value)" name="Months" id="months">
-                        <mat-option value="Jan">January</mat-option>
-                        <mat-option value="Feb">February</mat-option>
-                        <mat-option value="Mar">March</mat-option>
-                        <mat-option value="Apr">April</mat-option>
-                        <mat-option value="May">May</mat-option>
-                        <mat-option value="Jun">June</mat-option>
-                        <mat-option value="Jul">July</mat-option>
-                        <mat-option value="Aug">August</mat-option>
-                        <mat-option value="Sep">September</mat-option>
-                        <mat-option value="Oct">October</mat-option>
-                        <mat-option value="Nov">November</mat-option>
-                        <mat-option value="Dec">December</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-            <ejs-chart #dailyChart id="daily-chart-container" [primaryXAxis]='dailyXAxis' [primaryYAxis]='dailyYAxis'>
-                <e-series-collection>
-                    <e-series [dataSource]='dailyDataPoints' type='Line' xName='label' yName='y' name='Daily data'></e-series>
-                </e-series-collection>
-            </ejs-chart>
-            <!-- <canvasjs-chart [options]="dailyChartOptions" (chartInstance)="getDailyChartInstance($event)"></canvasjs-chart> -->
-        </div>
-        <div style="width: 50%;" id="weeklyCharts">
-            <div class="controls">    
-                <mat-form-field>
-                    <mat-label>Dry tonnes</mat-label>
-                    <mat-select #weeklyTitleList (selectionChange)="refreshPlot(weeklyTitleList.value, 'weeklyWeek')" name="weeklyTitles" id="weeklyTitles">
-                        <mat-option *ngFor="let _title of titles" [value]="_title | json">{{_title.title}}</mat-option>
-                    </mat-select>     
-                </mat-form-field>
-                <div><h1>Weekly data (individual weeks)</h1></div>
-            </div>
-            <ejs-chart #weeklyChart id="weekly-chart-container" [primaryXAxis]='weeklyXAxis' [primaryYAxis]='weeklyYAxis'>
-                <e-series-collection>
-                    <e-series [dataSource]='weeklyDataPoints' type='Line' xName='label' yName='y' name='Weekly data'></e-series>
-                </e-series-collection>
-            </ejs-chart>
-            <!-- <canvasjs-chart  [options]="weeklyChartOptions" (chartInstance)="getWeeklyChartInstance($event)"></canvasjs-chart> -->
-        </div>
-    </div>
-    <button ej-button mat-fab extended (click)="export()">Generate report</button>
-
+  <button mat-raised-button (click)="export()" >print chart</button>
 </div>
-
-<!-- <div class="cols">
-    
-    <div class="col">
-        <div>
-            <input checked (change)="setPeriod($event)" #summary type="radio" id="summary" name="data" value="summary">
-            <label for="summary">Summary budget</label><br>
-        
-            <input (change)="setPeriod($event)" type="radio" id="daily" name="data" value="daily">
-            <label for="daily">Daily budget (individual months)</label><br> -->
-        
-            <!-- <input (change)="setPeriod($event)" type="radio" id="weekly_month" name="data" value="weekly_month">
-            <label for="weekly_month">Weekly budget (individual months)</label><br> -->
-        
-            <!-- <input (change)="setPeriod($event, titleList.value)" type="radio" id="weekly_week" name="data" value="weeklyWeek">
-            <label for="weekly_week">Weekly budget (individual weeks)</label><br>
-        </div>
-        
-        <br>
-    </div>
-</div> -->
-
-<br><br>
-
-<!-- <div class="cols">
-    <div class="col">
-        <input (change)="changeGraph($event)" type="radio" id="bar" name="chart" value="bar">
-        <label for="bar">Bar chart</label><br>
-    
-        <input checked (change)="changeGraph($event)" type="radio" id="line" name="chart" value="line">
-        <label for="line">Line</label><br>
-    </div>
-    <div class="col">
-        <input (change)="changeTheme($event)" type="radio" id="dark1" name="theme" value="dark1">
-        <label for="dark1">Dark theme 1</label><br>
-
-        <input (change)="changeTheme($event)" type="radio" id="dark3" name="theme" value="dark2">
-        <label for="dark1">Dark theme 2</label><br>
-    
-        <br>
-
-        <input checked (change)="changeTheme($event)" type="radio" id="light1" name="theme" value="light1">
-        <label for="light1">Light theme 1</label><br>
-
-        <input checked (change)="changeTheme($event)" type="radio" id="light2" name="theme" value="light2">
-        <label for="light1">Light theme 2</label><br>
-    </div>
-</div> -->
-
-<!-- <button (click)="plotChart()">Plot data</button> -->
-

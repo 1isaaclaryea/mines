@@ -1,7 +1,51 @@
 <div class="spreadsheet-container">
-    <ejs-spreadsheet #spreadsheet (created)="created()" openUrl='https://services.syncfusion.com/angular/production/api/spreadsheet/open' allowOpen='true'> </ejs-spreadsheet>
-</div>
+    <div class="status-label" *ngIf="dataStatus">
+        <mat-chip [ngClass]="{'approved': dataStatus === 'approved', 'pending': dataStatus === 'pending', 'rejected': dataStatus === 'rejected'}">
+            <mat-icon>{{
+                dataStatus === 'approved' ? 'check_circle' : 
+                dataStatus === 'rejected' ? 'cancel' : 'pending'
+            }}</mat-icon>
+            {{
+                dataStatus === 'approved' ? 'Approved' : 
+                dataStatus === 'rejected' ? 'Rejected' : 'Pending Approval'
+            }}
+        </mat-chip>
+    </div>
+
+    <div id="univer-container">
+        <ejs-spreadsheet #spreadsheet allowOpen="true" openUrl='https://services.syncfusion.com/angular/production/api/spreadsheet/open'>
+        </ejs-spreadsheet>
+    </div>
+    
+</div>   
+
 <div class="centered-controls">
-    <!-- <button mat-flat-button>Basic</button> -->
-    <button mat-flat-button>Submit</button>
+    <!-- Submit button (visible to all) -->
+    <button mat-raised-button color="primary" (click)="submitData()" 
+        [disabled]="isLoading || dataStatus === 'approved' || dataStatus === 'rejected'">
+        <mat-icon>upload</mat-icon>
+        Submit Data
+    </button>
+    
+    <!-- Approve/Reject buttons (only visible to supervisors with pending data) -->
+    <ng-container *ngIf="isSupervisor && dataStatus === 'pending' || dataStatus === 'rejected'">
+        <button 
+            mat-raised-button 
+            color="accent" 
+            (click)="approveData()"
+            [disabled]="isLoading">
+            <mat-icon>check_circle</mat-icon>
+            Approve Data
+        </button>
+    </ng-container>
+    <ng-container *ngIf="isSupervisor && dataStatus === 'approved'">
+        <button 
+            mat-raised-button 
+            color="warn" 
+            (click)="rejectData()"
+            [disabled]="isLoading">
+            <mat-icon>cancel</mat-icon>
+            Reject Data
+        </button>
+    </ng-container>
 </div>
