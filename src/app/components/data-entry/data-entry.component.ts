@@ -83,7 +83,7 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
     const currentHour = new Date().getHours();
     const timeSlots: string[] = [];
     let startHour: number;
-
+    console.log(currentHour)
     if (currentHour >= 6 && currentHour < 18) {
       startHour = 6;  // 6 AM - 6 PM
     } else if (currentHour >= 18 && currentHour < 24) {
@@ -92,7 +92,7 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
       startHour = 0;  // 12 AM
     }
 
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 13; i++) {
       const hour = (startHour + i) % 24;
       timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
     }
@@ -179,7 +179,7 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
             .then(async () => {
               const worksheet = workbook.worksheets[0];
               const timeSlots = this.getTimeSlots();
-              // console.log(timeSlots)
+              console.log(timeSlots)
               timeSlots.forEach((time, index) => {
                 worksheet.getCell(this.alphabets[2] + (index + 7).toString()).value = time;
               });
