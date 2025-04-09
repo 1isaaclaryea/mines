@@ -84,17 +84,15 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
     const timeSlots: string[] = [];
     let startHour: number;
 
-    if (currentHour >= 6 && currentHour < 12) {
-      startHour = 6;  // 6 AM - 12 PM
-    } else if (currentHour >= 12 && currentHour < 18) {
-      startHour = 12; // 12 PM - 6 PM
+    if (currentHour >= 6 && currentHour < 18) {
+      startHour = 6;  // 6 AM - 6 PM
     } else if (currentHour >= 18 && currentHour < 24) {
       startHour = 18; // 6 PM - 12 AM
     } else {
-      startHour = 0;  // 12 AM - 6 AM
+      startHour = 0;  // 12 AM
     }
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 12; i++) {
       const hour = (startHour + i) % 24;
       timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
     }
@@ -110,25 +108,51 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: err => console.error('Observable emitted an error: ' + err),
       complete: () => {
+        // check if these have to be deleted
         let file: File = new File([this.tmpFileData], 'Worksheet.xlsx');
+        // this.updateTimeSlots(file);
         this.loadExistingData(file);
       }
     })
   }
 
-  private async updateTimeSlots() {
+  private updateTimeSlots(file: File) {
     const timeSlots = this.getTimeSlots();
-    const sheet = this.workbook.getActiveSheet();
-    
+    // const sheet = this.workbook.getActiveSheet();
+    let fileR: File;
     // Update cells C6 to C11 with new time values
-    timeSlots.forEach((time, index) => {
-      sheet.setValue(6 + index, 2, time); // Column C = 2 (0-based)
-    });
+   
+
+    const reader = new FileReader();
+    reader.readAsArrayBuffer(file);
+    return reader.onload = async () => {
+      const buffer = reader.result as any;
+      const workbook = new ExcelJS.Workbook();
+      try {
+        await workbook.xlsx
+          .load(buffer);
+        const worksheet = workbook.worksheets[0];
+        timeSlots.forEach((time, index) => {
+          // sheet.setValue(6 + index, 2, time); // Column C = 2 (0-based)
+          worksheet.getCell(this.alphabets[3] + (index + 7).toString()).value = time;
+          workbook.xlsx.writeBuffer().then((buffer_2: any) => {
+            const blob = new Blob([buffer_2], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            fileR = new File([blob], 'TmpWorksheet1.xlsx');
+            this.spreadsheetObj!.open({ file: fileR });
+          });
+          return fileR;
+        });
+      } catch (error) {
+        console.log(error);
+      }
+        // return fileR;
+      }
+    
   }
 
   private async loadExistingData(baseFile: File): Promise<any> {
-    console.log("Loading data...");
-
+    // console.log("Loading data...");
+    let fileR: File;
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -137,10 +161,11 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
         localStorage.getItem('userSection')!,
         today
       );
-
+      // console.log(response)
       if (response.length > 0) {
-        // console.log("Loading data...");
+        console.log("Loading data...");
         this.dataStatus = response[0].status;
+        console.log(this.dataStatus);
         this.currentEntryId = response[0]._id;
         const data = response[0].data;
 
@@ -151,45 +176,60 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
           const workbook = new ExcelJS.Workbook();
           workbook.xlsx
             .load(buffer)
-            .then(() => {
+            .then(async () => {
               const worksheet = workbook.worksheets[0];
-
+              const timeSlots = this.getTimeSlots();
+              // console.log(timeSlots)
+              timeSlots.forEach((time, index) => {
+                worksheet.getCell(this.alphabets[2] + (index + 7).toString()).value = time;
+              });
+              
               Object.keys(data).forEach((objectName, colIndex) => {
                 if(data[objectName].values) {
                   const values = data[objectName].values;
-                  console.log(values);
                   values.forEach((entry: any) => {
                     // consider using get time slots function
-                    const rowIndex = ["6","7","8","9","10","11","12","13","14","15","16","17","18"].indexOf(entry.time);
+                    // const rowIndex = ["6","7","8","9","10","11","12","13","14","15","16","17","18"].indexOf(entry.time);
+                    const rowIndex = this.getTimeSlots().indexOf(entry.time);
                     if (rowIndex !== -1) {
                       worksheet.getCell(this.alphabets[colIndex+3]+(rowIndex+7).toString()).value = entry.value;
-                      // const sheet = this.spreadsheetObj.getActiveSheet();
-                      // let cell: CellModel = getCell(6 + rowIndex, 3 + colIndex, sheet);
-                      // Entry point. Look into update cell and ensure that cells are populated with submitted data
-                      // this.spreadsheetObj.updateCell({value: entry.value}, this.alphabets[colIndex+3]+(rowIndex+7).toString());
                     }
                   });
                 }
               });
-              // console.log(worksheet)
+              workbook.xlsx.writeBuffer().then((buffer: any) => {
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                let file1: File = new File([blob], 'Worksheet1.xlsx');
+                this.spreadsheetObj!.open({ file: file1 });
+              });
+
             })
             .catch((error) => {
               console.log(error)
             });
           }
-
-
-        // Populate spreadsheet with existing data
-        // const workbook = new ExcelJS.Workbook();
-        // await workbook.xlsx.readFile(baseFile.name);
-        // console.log(baseFile.name);
-
-        // const worksheet = workbook.worksheets[0];
-
-        
+      }
+      else {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(baseFile);
+        reader.onload = () => {
+          const buffer = reader.result as any;
+          const workbook = new ExcelJS.Workbook();
+          workbook.xlsx
+            .load(buffer)
+            .then(async () => {
+              const worksheet = workbook.worksheets[0];
+              const timeSlots = this.getTimeSlots();
+              // console.log(timeSlots)
+              timeSlots.forEach((time, index) => {
+                worksheet.getCell(this.alphabets[2] + (index + 7).toString()).value = time;
+              });
+            }
+            
+            )}
+            
         this.spreadsheetObj!.open({ file: baseFile });
       }
-      return null;
     } catch (error) {
       console.error('Error fetching existing data:', error);
       return null;
@@ -218,7 +258,7 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
         // two hour intervals. The rest should go in as zero. Later write logic to delete these values since it can 
         // affect forecasting
         // consider using get time slots function
-        ["6","7","8","9","10","11","12","13","14","15","16","17","18"].forEach((time, rowIndex) => {
+          this.getTimeSlots().forEach((time, rowIndex) => {
           const sheet = this.spreadsheetObj.getActiveSheet();
           let cell: CellModel = getCell(6 + rowIndex, 3 + colIndex, sheet);
           // To get the formatted cell value, specify the cell model.
@@ -256,9 +296,9 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async approveData() {
     if (!this.currentEntryId) return;
-    
+    console.log(this.currentEntryId)
     try {
-      // await this.apiService.approveDataEntry(this.currentEntryId, 'approved', this.supervisorId);
+      await this.apiService.approveDataEntry(this.currentEntryId, 'approved', this.employeeId!);
       this.dataStatus = 'approved';
       this.showMessage('Data approved successfully');
     } catch (error) {
@@ -269,10 +309,10 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async rejectData() {
     if (!this.currentEntryId) return;
-    
+    console.log(this.currentEntryId)
     try {
-      // await this.apiService.rejectDataEntry(this.currentEntryId, 'rejected', this.supervisorId);
-      this.dataStatus = 'rejected';
+      await this.apiService.approveDataEntry(this.currentEntryId, 'pending', this.employeeId!);
+      this.dataStatus = 'pending';
       this.showMessage('Data rejected successfully');
     } catch (error) {
       console.error('Error rejecting data:', error);
