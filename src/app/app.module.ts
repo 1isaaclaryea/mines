@@ -1,19 +1,19 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/common/http'
-import { FormsModule } from '@angular/forms';
+import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
-import { environment } from '../environments/environment';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TestDashComponent } from './components/test-dash/test-dash.component';
 import { BrowserAnimationsModule as AppBrowserAnimationsModule } from '@angular/platform-browser/animations';
 
+// Material Imports
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list'
+import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,6 +26,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { SettingsComponent } from './components/settings/settings.component';
 import { LoginComponent } from './components/login/login.component';
@@ -41,6 +42,7 @@ import { DropDownListModule } from '@syncfusion/ej2-angular-dropdowns';
 import { SpreadsheetAllModule } from '@syncfusion/ej2-angular-spreadsheet';
 import { SpreadsheetComponent } from '@syncfusion/ej2-angular-spreadsheet';
 import { tokenInterceptor } from './interceptors/token.interceptor';
+import { BudgetEntryComponent } from './components/budget-entry/budget-entry.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +52,8 @@ import { tokenInterceptor } from './interceptors/token.interceptor';
     LoginComponent,
     DataEntryComponent,
     AccountComponent,
-    ApproveDialogComponent
+    ApproveDialogComponent,
+    BudgetEntryComponent
   ],
   imports: [
     BrowserModule,
@@ -58,7 +61,10 @@ import { tokenInterceptor } from './interceptors/token.interceptor';
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
+    ReactiveFormsModule,
     AppBrowserAnimationsModule,
+    CommonModule,
+    // Material Modules
     MatSidenavModule,
     MatIconModule,
     MatListModule,
@@ -73,12 +79,13 @@ import { tokenInterceptor } from './interceptors/token.interceptor';
     MatTableModule,
     MatChipsModule,
     MatMenuModule,
-    ChartModule,
-    ChartAllModule,
-    CommonModule,
     MatDialogModule,
+    MatExpansionModule,
+    // Other Modules
     DropDownListModule,
-    SpreadsheetAllModule
+    SpreadsheetAllModule,
+    ChartModule,
+    ChartAllModule
   ],
   providers: [
     provideAnimationsAsync(),

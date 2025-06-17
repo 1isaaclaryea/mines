@@ -87,8 +87,9 @@ export class DataService {
   }
 
   getFileData$(fileId:number): Observable<Blob>{
+    console.log(fileId);
     return this.http.get(this.backendUrl+"file/"+fileId.toString(), { responseType: 'blob'});
-    // console.log(file);
+    
   }
 
   async getQuarterlyBudget(field:TITLE) {

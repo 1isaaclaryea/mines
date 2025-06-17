@@ -1,0 +1,76 @@
+.budget-entry-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.period-selection {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.form-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+mat-expansion-panel {
+  margin-bottom: 8px;
+}
+
+mat-card-actions {
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Make sure expansion panels don't get too wide */
+mat-accordion {
+  display: block;
+  max-width: 100%;
+}
+
+/* Add some spacing between form fields */
+.mat-form-field + .mat-form-field {
+  margin-left: 8px;
+}
+
+/* Style for required fields */
+mat-label::after {
+  content: " *";
+  color: red;
+}
+
+.page-title {
+  text-align: center;
+  margin: 24px 0;
+  color: #dddddd;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .period-selection {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-section {
+    grid-template-columns: 1fr;
+  }
+}

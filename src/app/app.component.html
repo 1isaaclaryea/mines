@@ -5,10 +5,10 @@
         <p>Mining company</p>
       </div>
         <mat-nav-list>
-            <a mat-list-item routerLink="/" >
+            <a mat-list-item routerLink="/">
               <div class="nav-item">
                 <mat-icon class="nav-icon">assessment</mat-icon>
-                <span class="nav-text">Reports</span>
+                <span class="nav-text">Dashboard</span>
               </div>
             </a>
             <a mat-list-item routerLink="/data-entry"  *ngIf="!isAdmin">
@@ -23,6 +23,25 @@
                 <span class="nav-text">Accounts</span>
               </div>
             </a>
+            <!-- add check to see if user is admin later -->
+            <a mat-list-item routerLink="/budget-entry" *ngIf="isAdmin">
+              <div class="nav-item">
+                <mat-icon class="nav-icon">receipt</mat-icon>
+                <span class="nav-text">Budget entry</span>
+              </div>
+            </a>
+            <!-- <a mat-list-item routerLink="/preferences">
+              <div class="nav-item">
+                <mat-icon class="nav-icon">monitoring</mat-icon>
+                <span class="nav-text">Production monitoring</span>
+              </div>
+            </a>
+            <a mat-list-item routerLink="/preferences">
+              <div class="nav-item">
+                <mat-icon class="nav-icon">engineering</mat-icon>
+                <span class="nav-text">Equipment monitoring</span>
+              </div>
+            </a> -->
             <a mat-list-item routerLink="/preferences">
               <div class="nav-item">
                 <mat-icon class="nav-icon">settings</mat-icon>
@@ -35,6 +54,7 @@
                 <span class="nav-text">Logout</span>
               </div>
             </a>
+            
         </mat-nav-list>          
     </mat-drawer>
   

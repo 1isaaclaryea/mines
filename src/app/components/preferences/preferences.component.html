@@ -1,1 +1,110 @@
-<p>preferences works!</p>
+<div class="preferences-container">
+  <h2>Preferences</h2>
+
+  <div class="preferences-section">
+    <h3>Appearance</h3>
+    
+    <div class="preference-item">
+      <label for="theme">Theme:</label>
+      <select id="theme" [(ngModel)]="preferences.theme" (change)="savePreferences()">
+        <option *ngFor="let theme of themes" [value]="theme">{{ theme | titlecase }}</option>
+      </select>
+    </div>
+
+    <div class="preference-item">
+      <label for="font">Font Family:</label>
+      <select id="font" [(ngModel)]="preferences.font" (change)="savePreferences()">
+        <option *ngFor="let font of fonts" [value]="font">{{ font }}</option>
+      </select>
+    </div>
+
+    <div class="preference-item">
+      <label for="fontSize">Font Size:</label>
+      <select id="fontSize" [(ngModel)]="preferences.fontSize" (change)="savePreferences()">
+        <option *ngFor="let size of fontSizes" [value]="size">{{ size }}px</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="preferences-section">
+    <h3>Data Entry Settings</h3>
+    
+    <div class="preference-item">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="preferences.enableAutoSave" (change)="savePreferences()">
+        Enable Auto-Save
+      </label>
+    </div>
+
+    <div class="preference-item">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="preferences.gridLines" (change)="savePreferences()">
+        Show Grid Lines
+      </label>
+    </div>
+  </div>
+</div>
+
+<style>
+  .preferences-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    margin-bottom: 2rem;
+    color: #333;
+  }
+
+  .preferences-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+  }
+
+  h3 {
+    margin-bottom: 1.5rem;
+    color: #555;
+  }
+
+  .preference-item {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+  }
+
+  label {
+    min-width: 120px;
+    margin-right: 1rem;
+    color: #666;
+  }
+
+  select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    min-width: 150px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  input[type="checkbox"] {
+    margin-right: 0.5rem;
+  }
+
+  select:focus,
+  input[type="checkbox"]:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 1px;
+  }
+</style>

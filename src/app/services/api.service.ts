@@ -36,6 +36,7 @@ export class ApiService {
           localStorage.setItem('token', response.token);
           localStorage.setItem('userSection', response.user.section);
           localStorage.setItem('employeeId', response.user.employeeId);
+          localStorage.setItem('userRole', response.user.role);
         }
       })
     );
@@ -44,7 +45,7 @@ export class ApiService {
   async logout(): Promise<void> {
     try {
       await firstValueFrom(
-        this.http.post(`${this.baseUrl}/logout`, {})
+        this.http.post(`${this.baseUrl}/logout`, {}, { headers: this.getHeaders() })
       );
       // Clear local storage
       localStorage.clear();

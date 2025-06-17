@@ -1,0 +1,526 @@
+<!-- Page Title -->
+<h1 class="page-title">Budget Entry</h1>
+
+<div class="budget-entry-container">
+  <mat-card>
+    <mat-card-content>
+      <!-- Year and Month Selection -->
+      <div class="period-selection">
+        <mat-form-field appearance="fill">
+          <mat-label>Year</mat-label>
+          <!-- bug! -->
+          <!-- This section doesn't work as expected. Sometimes after the year is changed, the current year increases by one. Check this later -->
+          <mat-select [value]="currentYear" (selectionChange)="onYearChange($event.value)">
+            <mat-option [value]="currentYear - 1">{{currentYear - 1}}</mat-option>
+            <mat-option [value]="currentYear">{{currentYear}}</mat-option>
+            <mat-option [value]="currentYear + 1">{{currentYear + 1}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Month</mat-label>
+          <mat-select [value]="currentMonth" (selectionChange)="onMonthChange($event.value)">
+            <mat-option *ngFor="let month of months" [value]="month">
+              {{['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][month - 1]}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="loading" class="loading-spinner">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+
+      <!-- Budget Form -->
+      <form [formGroup]="budgetForm" *ngIf="!loading">
+        <mat-accordion>
+          <!-- Crushing Section -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Crushing</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div formGroupName="crushing" class="form-section">
+              <mat-form-field>
+                <mat-label>Dry Tonnes</mat-label>
+                <input matInput type="number" formControlName="dryTonnes">
+                <mat-error *ngIf="budgetForm.get('crushing.dryTonnes')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('crushing.dryTonnes')?.errors?.['min']">Must be positive</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Crusher Availability (%)</mat-label>
+                <input matInput type="number" formControlName="crusherAvailability">
+                <mat-error *ngIf="budgetForm.get('crushing.crusherAvailability')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('crushing.crusherAvailability')?.errors?.['min'] || budgetForm.get('crushing.crusherAvailability')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Crusher Utilization (%)</mat-label>
+                <input matInput type="number" formControlName="crusherUtilization">
+                <mat-error *ngIf="budgetForm.get('crushing.crusherUtilization')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('crushing.crusherUtilization')?.errors?.['min'] || budgetForm.get('crushing.crusherUtilization')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Stockpile Closing Balance</mat-label>
+                <input matInput type="number" formControlName="stockpileClosingBalance">
+                <mat-error *ngIf="budgetForm.get('crushing.stockpileClosingBalance')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('crushing.stockpileClosingBalance')?.errors?.['min']">Must be positive</mat-error>
+              </mat-form-field>
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Milling Section -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Milling</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div formGroupName="milling" class="form-section">
+              <!-- Similar structure as crushing section -->
+              <mat-form-field>
+                <mat-label>Dry Tonnes (t)</mat-label>
+                <input matInput type="number" formControlName="dryTonnes">
+                <mat-error *ngIf="budgetForm.get('milling.dryTonnes')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('milling.dryTonnes')?.errors?.['min']">Must be positive</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Mill Availability (%)</mat-label>
+                <input matInput type="number" formControlName="millAvailability">
+                <mat-error *ngIf="budgetForm.get('milling.millAvailability')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('milling.millAvailability')?.errors?.['min'] || budgetForm.get('milling.millAvailability')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Mill Utilization (%)</mat-label>
+                <input matInput type="number" formControlName="millUtilization">
+                <mat-error *ngIf="budgetForm.get('milling.millUtilization')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('milling.millUtilization')?.errors?.['min'] || budgetForm.get('milling.millUtilization')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Grind Size (-75um) (%)</mat-label>
+                <input matInput type="number" formControlName="grindSize">
+                <mat-error *ngIf="budgetForm.get('milling.grindSize')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('milling.grindSize')?.errors?.['min'] || budgetForm.get('milling.grindSize')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Recirculating Load (%)</mat-label>
+                <input matInput type="number" formControlName="recirculatingLoad">
+                <mat-error *ngIf="budgetForm.get('milling.recirculatingLoad')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('milling.recirculatingLoad')?.errors?.['min'] || budgetForm.get('milling.recirculatingLoad')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>% Cyc. U/F Feed to Flash</mat-label>
+                <input matInput type="number" formControlName="cycUfFeedToFlash">
+                <mat-error *ngIf="budgetForm.get('milling.cycUfFeedToFlash')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('milling.cycUfFeedToFlash')?.errors?.['min'] || budgetForm.get('milling.cycUfFeedToFlash')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <!-- Add all milling fields -->
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Grade Section -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Grade</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div formGroupName="grade" class="form-section">
+              <!-- Add all grade fields -->
+              <mat-form-field>
+                <mat-label>Mill Feed Gold Grade (g/t)</mat-label>
+                <input matInput type="number" formControlName="millFeedGoldGrade">
+                <mat-error *ngIf="budgetForm.get('grade.millFeedGoldGrade')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('grade.millFeedGoldGrade')?.errors?.['min']">Must be positive</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Cyclone U/F Gold Grade (g/t)</mat-label>
+                <input matInput type="number" formControlName="cycloneUfGoldGrade">
+                <mat-error *ngIf="budgetForm.get('grade.cycloneUfGoldGrade')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('grade.cycloneUfGoldGrade')?.errors?.['min']">Must be positive</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Mill Feed Total Sulphur Grade (%)</mat-label>
+                <input matInput type="number" formControlName="millFeedTotalSulphurGrade">
+                <mat-error *ngIf="budgetForm.get('grade.millFeedTotalSulphurGrade')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('grade.millFeedTotalSulphurGrade')?.errors?.['min'] || budgetForm.get('grade.millFeedTotalSulphurGrade')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Mill Feed Pyritic Sulphur (%)</mat-label>
+                <input matInput type="number" formControlName="millFeedPyriticSulphur">
+                <mat-error *ngIf="budgetForm.get('grade.millFeedPyriticSulphur')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('grade.millFeedPyriticSulphur')?.errors?.['min'] || budgetForm.get('grade.millFeedPyriticSulphur')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Mill Feed Arsenic (g/t)</mat-label>
+                <input matInput type="number" formControlName="millFeedArsenic">
+                <mat-error *ngIf="budgetForm.get('grade.millFeedArsenic')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('grade.millFeedArsenic')?.errors?.['min']">Must be positive</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Flash Feed Sulphur Grade (%)</mat-label>
+                <input matInput type="number" formControlName="flashFeedSulphurGrade">
+                <mat-error *ngIf="budgetForm.get('grade.flashFeedSulphurGrade')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('grade.flashFeedSulphurGrade')?.errors?.['min'] || budgetForm.get('grade.flashFeedSulphurGrade')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Flash Conc. Sulphur Grade (%)</mat-label>
+                <input matInput type="number" formControlName="flashConcSulphurGrade">
+                <mat-error *ngIf="budgetForm.get('grade.flashConcSulphurGrade')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('grade.flashConcSulphurGrade')?.errors?.['min'] || budgetForm.get('grade.flashConcSulphurGrade')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Recovery Section -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Recovery</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div formGroupName="recovery" class="form-section">
+              <!-- Add all recovery fields -->
+              <mat-form-field>
+                <mat-label>Gravity Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="gravityRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.gravityRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.gravityRecovery')?.errors?.['min'] || budgetForm.get('recovery.gravityRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Flash Flotation Mass Pull (%)</mat-label>
+                <input matInput type="number" formControlName="flashFlotationMassPull">
+                <mat-error *ngIf="budgetForm.get('recovery.flashFlotationMassPull')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.flashFlotationMassPull')?.errors?.['min'] || budgetForm.get('recovery.flashFlotationMassPull')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Conventional Flotation Mass Pull (%)</mat-label>
+                <input matInput type="number" formControlName="conventionalFlotationMassPull">
+                <mat-error *ngIf="budgetForm.get('recovery.conventionalFlotationMassPull')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.conventionalFlotationMassPull')?.errors?.['min'] || budgetForm.get('recovery.conventionalFlotationMassPull')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Overall Flotation Mass Pull (%)</mat-label>
+                <input matInput type="number" formControlName="overallFlotationMassPull">
+                <mat-error *ngIf="budgetForm.get('recovery.overallFlotationMassPull')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.overallFlotationMassPull')?.errors?.['min'] || budgetForm.get('recovery.overallFlotationMassPull')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Flash Flotation Gold Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="flashFlotationGoldRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.flashFlotationGoldRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.flashFlotationGoldRecovery')?.errors?.['min'] || budgetForm.get('recovery.flashFlotationGoldRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Conv. Flotation Gold Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="convFlotationGoldRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.convFlotationGoldRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.convFlotationGoldRecovery')?.errors?.['min'] || budgetForm.get('recovery.convFlotationGoldRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Overall Flotation Gold Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="overallFlotationGoldRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.overallFlotationGoldRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.overallFlotationGoldRecovery')?.errors?.['min'] || budgetForm.get('recovery.overallFlotationGoldRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Flash Flotation Sulphur Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="flashFlotationSulphurRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.flashFlotationSulphurRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.flashFlotationSulphurRecovery')?.errors?.['min'] || budgetForm.get('recovery.flashFlotationSulphurRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Conv. Flotation Sulphur Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="convFlotationSulphurRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.convFlotationSulphurRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.convFlotationSulphurRecovery')?.errors?.['min'] || budgetForm.get('recovery.convFlotationSulphurRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Overall Flotation Sulphur Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="overallFlotationSulphurRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.overallFlotationSulphurRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.overallFlotationSulphurRecovery')?.errors?.['min'] || budgetForm.get('recovery.overallFlotationSulphurRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Flash Flotation Pyritic Sulphur Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="flashFlotationPyriticSulphurRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.flashFlotationPyriticSulphurRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.flashFlotationPyriticSulphurRecovery')?.errors?.['min'] || budgetForm.get('recovery.flashFlotationPyriticSulphurRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Conv. Flotation Pyritic Sulphur Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="convFlotationPyriticSulphurRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.convFlotationPyriticSulphurRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.convFlotationPyriticSulphurRecovery')?.errors?.['min'] || budgetForm.get('recovery.convFlotationPyriticSulphurRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Overall Flotation Pyritic Sulphur Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="overallFlotationPyriticSulphurRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.overallFlotationPyriticSulphurRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.overallFlotationPyriticSulphurRecovery')?.errors?.['min'] || budgetForm.get('recovery.overallFlotationPyriticSulphurRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+            </div>
+          </mat-expansion-panel>
+
+          <!-- CIL Gold Recovered Section -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>CIL Gold Recovered</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div formGroupName="cilGoldRecovered" class="form-section">
+              <mat-form-field>
+                <mat-label>Overall Plant Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="overallPlantRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.overallPlantRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.overallPlantRecovery')?.errors?.['min'] || budgetForm.get('recovery.overallPlantRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Total Sulphur Recovery (%)</mat-label>
+                <input matInput type="number" formControlName="totalSulphurRecovery">
+                <mat-error *ngIf="budgetForm.get('recovery.totalSulphurRecovery')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('recovery.totalSulphurRecovery')?.errors?.['min'] || budgetForm.get('recovery.totalSulphurRecovery')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+            </div>
+          </mat-expansion-panel>
+
+
+          <!-- Gold Poured Section -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Gold Poured</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div formGroupName="goldPoured" class="form-section">
+              <!-- Add all gold poured fields -->
+              <mat-form-field>
+                <mat-label>Gold Poured, ozs</mat-label>
+                <input matInput type="number" formControlName="goldPouredOunces">
+                <mat-error *ngIf="budgetForm.get('goldPoured.goldPouredOunces')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('goldPoured.goldPouredOunces')?.errors?.['min'] || budgetForm.get('goldPoured.goldPouredOunces')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Opening Gold in Inventory, (oz)</mat-label>
+                <input matInput type="number" formControlName="openingGoldInventory">
+                <mat-error *ngIf="budgetForm.get('goldPoured.openingGoldInventory')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('goldPoured.openingGoldInventory')?.errors?.['min'] || budgetForm.get('goldPoured.openingGoldInventory')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Closing Gold in Inventory, (oz)</mat-label>
+                <input matInput type="number" formControlName="closingGoldInventory">
+                <mat-error *ngIf="budgetForm.get('goldPoured.closingGoldInventory')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('goldPoured.closingGoldInventory')?.errors?.['min'] || budgetForm.get('goldPoured.closingGoldInventory')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+            </div>
+          </mat-expansion-panel>
+
+          <!-- BIOX Section -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>BIOX</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div formGroupName="biox" class="form-section">
+              <!-- Add all BIOX fields -->
+              <mat-form-field>
+                <mat-label>Sulphur Oxidation, %</mat-label>
+                <input matInput type="number" formControlName="sulphurOxidation">
+                <mat-error *ngIf="budgetForm.get('biox.sulphurOxidation')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('biox.sulphurOxidation')?.errors?.['min'] || budgetForm.get('biox.sulphurOxidation')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Grind Size,  (-45um), %</mat-label>
+                <input matInput type="number" formControlName="grindSize">
+                <mat-error *ngIf="budgetForm.get('biox.grindSize')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('biox.grindSize')?.errors?.['min'] || budgetForm.get('biox.grindSize')?.errors?.['max']">Must be between 0 and 100</mat-error>
+              </mat-form-field>
+
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Reagents & Consumption Section -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Reagents & Consumption</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div formGroupName="reagentsConsumption" class="form-section">
+              <!-- Add all reagents fields -->
+              <mat-form-field>
+                <mat-label>Sodium Cyanide, kg</mat-label>
+                <input matInput type="number" formControlName="sodiumCyanide">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.sodiumCyanide')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.sodiumCyanide')?.errors?.['min'] || budgetForm.get('reagentsConsumption.sodiumCyanide')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Quicklime, kg</mat-label>
+                <input matInput type="number" formControlName="quicklime">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.quicklime')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.quicklime')?.errors?.['min'] || budgetForm.get('reagentsConsumption.quicklime')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Grinding Media, kg</mat-label>
+                <input matInput type="number" formControlName="grindingMedia">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.grindingMedia')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.grindingMedia')?.errors?.['min'] || budgetForm.get('reagentsConsumption.grindingMedia')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Activated Carbon, kg</mat-label>
+                <input matInput type="number" formControlName="activatedCarbon">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.activatedCarbon')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.activatedCarbon')?.errors?.['min'] || budgetForm.get('reagentsConsumption.activatedCarbon')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Sodium Hydroxide (Caustic Soda), kg</mat-label>
+                <input matInput type="number" formControlName="sodiumHydroxide">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.sodiumHydroxide')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.sodiumHydroxide')?.errors?.['min'] || budgetForm.get('reagentsConsumption.sodiumHydroxide')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>HCL, kg</mat-label>
+                <input matInput type="number" formControlName="hcl">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.hcl')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.hcl')?.errors?.['min'] || budgetForm.get('reagentsConsumption.hcl')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Flocullant, kg</mat-label>
+                <input matInput type="number" formControlName="flocullant">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.flocullant')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.flocullant')?.errors?.['min'] || budgetForm.get('reagentsConsumption.flocullant')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Xanthate, kg</mat-label>
+                <input matInput type="number" formControlName="xanthate">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.xanthate')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.xanthate')?.errors?.['min'] || budgetForm.get('reagentsConsumption.xanthate')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Promoter, kg</mat-label>
+                <input matInput type="number" formControlName="promoter">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.promoter')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.promoter')?.errors?.['min'] || budgetForm.get('reagentsConsumption.promoter')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Copper Sulphate, kg</mat-label>
+                <input matInput type="number" formControlName="copperSulphate">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.copperSulphate')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.copperSulphate')?.errors?.['min'] || budgetForm.get('reagentsConsumption.copperSulphate')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Frother, kg</mat-label>
+                <input matInput type="number" formControlName="frother">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.frother')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.frother')?.errors?.['min'] || budgetForm.get('reagentsConsumption.frother')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Fuel, L</mat-label>
+                <input matInput type="number" formControlName="fuel">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.fuel')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.fuel')?.errors?.['min'] || budgetForm.get('reagentsConsumption.fuel')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Cement, kg</mat-label>
+                <input matInput type="number" formControlName="cement">
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.cement')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('reagentsConsumption.cement')?.errors?.['min'] || budgetForm.get('reagentsConsumption.cement')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Water Treatment Section -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Water Treatment</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div formGroupName="waterTreatment" class="form-section">
+              <!-- Add all water treatment fields -->
+              <mat-form-field>
+                <mat-label>Process Water Treatment Volume, m3</mat-label>
+                <input matInput type="number" formControlName="processWaterTreatmentVolume">
+                <mat-error *ngIf="budgetForm.get('waterTreatment.processWaterTreatmentVolume')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('waterTreatment.processWaterTreatmentVolume')?.errors?.['min'] || budgetForm.get('waterTreatment.processWaterTreatmentVolume')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>RO 250 Plant, m3</mat-label>
+                <input matInput type="number" formControlName="ro250Plant">
+                <mat-error *ngIf="budgetForm.get('waterTreatment.ro250Plant')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('waterTreatment.ro250Plant')?.errors?.['min'] || budgetForm.get('waterTreatment.ro250Plant')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>RO 500 Plant, m3</mat-label>
+                <input matInput type="number" formControlName="ro500Plant">
+                <mat-error *ngIf="budgetForm.get('waterTreatment.ro500Plant')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('waterTreatment.ro500Plant')?.errors?.['min'] || budgetForm.get('waterTreatment.ro500Plant')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>RO 140 Plant, m3</mat-label>
+                <input matInput type="number" formControlName="ro140Plant">
+                <mat-error *ngIf="budgetForm.get('waterTreatment.ro140Plant')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('waterTreatment.ro140Plant')?.errors?.['min'] || budgetForm.get('waterTreatment.ro140Plant')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>STP WTP, m3</mat-label>
+                <input matInput type="number" formControlName="stpWtp">
+                <mat-error *ngIf="budgetForm.get('waterTreatment.stpWtp')?.errors?.['required']">Required</mat-error>
+                <mat-error *ngIf="budgetForm.get('waterTreatment.stpWtp')?.errors?.['min'] || budgetForm.get('waterTreatment.stpWtp')?.errors?.['max']">Must be between 0 and 1000000</mat-error>
+              </mat-form-field>
+
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-button color="primary" (click)="saveDraft()" [disabled]="saving">
+        Save Draft
+        <mat-icon *ngIf="saving">sync</mat-icon>
+      </button>
+      <button mat-raised-button color="primary" (click)="submit()" [disabled]="saving">
+        Submit
+        <mat-icon *ngIf="saving">sync</mat-icon>
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

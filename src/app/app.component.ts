@@ -14,11 +14,14 @@ import { environment } from '../environments/environment';
 })
 export class AppComponent implements OnInit {
   @ViewChild('drawer') drawer!: MatDrawer;
-
+  userRole: string;
   drawerOut: boolean = false;
+  isHigherLevel: boolean = false;
 
   constructor(private router: Router, private apiService: ApiService){
-
+    this.userRole = localStorage.getItem('userRole')!;
+    this.isHigherLevel = this.userRole === 'supervisor' || this.userRole === 'manager';
+    console.log(this.userRole);
   }
 
   ngOnInit() {

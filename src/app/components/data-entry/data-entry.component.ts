@@ -125,23 +125,25 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
-    return reader.onload = async () => {
+    reader.onload = async () => {
       const buffer = reader.result as any;
       const workbook = new ExcelJS.Workbook();
       try {
-        await workbook.xlsx
-          .load(buffer);
+        workbook.xlsx
+          .load(buffer)
+          .then(
+
+        );
         const worksheet = workbook.worksheets[0];
         timeSlots.forEach((time, index) => {
           // sheet.setValue(6 + index, 2, time); // Column C = 2 (0-based)
-          worksheet.getCell(this.alphabets[3] + (index + 7).toString()).value = time;
+          worksheet.getCell(this.alphabets[2] + (index + 7).toString()).value = time;
           workbook.xlsx.writeBuffer().then((buffer_2: any) => {
             const blob = new Blob([buffer_2], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             fileR = new File([blob], 'TmpWorksheet1.xlsx');
-            this.spreadsheetObj!.open({ file: fileR });
           });
-          return fileR;
         });
+        this.spreadsheetObj!.open({ file: fileR });
       } catch (error) {
         console.log(error);
       }
@@ -161,6 +163,10 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
         localStorage.getItem('userSection')!,
         today
       );
+      const workbook = new ExcelJS.Workbook();
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(baseFile);
+
       // console.log(response)
       if (response.length > 0) {
         console.log("Loading data...");
@@ -169,11 +175,9 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
         this.currentEntryId = response[0]._id;
         const data = response[0].data;
 
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(baseFile);
         reader.onload = () => {
           const buffer = reader.result as any;
-          const workbook = new ExcelJS.Workbook();
+          
           workbook.xlsx
             .load(buffer)
             .then(async () => {
@@ -210,25 +214,30 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
           }
       }
       else {
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(baseFile);
         reader.onload = () => {
-          const buffer = reader.result as any;
-          const workbook = new ExcelJS.Workbook();
-          workbook.xlsx
+        const buffer = reader.result as any;
+        workbook.xlsx
             .load(buffer)
             .then(async () => {
               const worksheet = workbook.worksheets[0];
               const timeSlots = this.getTimeSlots();
-              // console.log(timeSlots)
+              console.log(timeSlots)
               timeSlots.forEach((time, index) => {
                 worksheet.getCell(this.alphabets[2] + (index + 7).toString()).value = time;
               });
-            }
-            
-            )}
-            
-        this.spreadsheetObj!.open({ file: baseFile });
+              workbook.xlsx.writeBuffer().then((buffer: any) => {
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                let file1: File = new File([blob], 'Worksheet1.xlsx');
+                this.spreadsheetObj!.open({ file: file1 });
+              });
+
+            })
+            .catch((error) => {
+              console.log(error)
+            });
+        // this.spreadsheetObj!.open({ file: baseFile });
+        this.updateTimeSlots(baseFile);
+      }
       }
     } catch (error) {
       console.error('Error fetching existing data:', error);
