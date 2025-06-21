@@ -17,7 +17,6 @@ export class AccountComponent implements OnInit {
     name: '',
     employeeId: '',
     role: 'operator',
-    section: '',
     email: '',
     password: '',
     phoneNumber: '',
@@ -27,6 +26,7 @@ export class AccountComponent implements OnInit {
 
   // Remember to get a global definition for section. Most likely using an interface
   sections = [
+    { name: 'Select Section (Optional)', value: '' },
     { name: 'CIL Plant' , value: 'cil'},
     { name: 'Crushing Shift' , value: 'crushing'},
     { name: 'SAG Mill' , value: 'sag'}

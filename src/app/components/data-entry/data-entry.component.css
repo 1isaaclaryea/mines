@@ -99,6 +99,18 @@ mat-icon {
     }
 }
 
+.controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding: 0 1rem;
+}
+
+.controls-row mat-form-field {
+    width: 300px;
+}
+
 @media screen and (max-width: 600px) {
     .spreadsheet-container {
         height: 70vh;

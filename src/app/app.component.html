@@ -48,6 +48,12 @@
                 <span class="nav-text">Preferences</span>
               </div>
             </a>
+            <a mat-list-item routerLink="/chat">
+              <div class="nav-item">
+                <mat-icon class="nav-icon">insights</mat-icon>
+                <span class="nav-text">AI Insights</span>
+              </div>
+            </a>
             <a mat-list-item (click)="logout()" routerLink="/login" >
               <div class="nav-item">
                 <mat-icon class="nav-icon">logout</mat-icon>
@@ -68,7 +74,7 @@
           <button class="menu-btn" mat-icon-button aria-label="Settings button">
             <mat-icon matTooltip="Application settings">settings</mat-icon>
           </button>
-          <button (click)="handleRoute('login')" routerLink="/login" class="menu-btn" mat-icon-button aria-label="Account settings button">
+          <button (click)="logout()" class="menu-btn" mat-icon-button aria-label="Account settings button">
             <mat-icon matTooltip="Account settings">account_circle</mat-icon>
           </button>
         </div>
@@ -82,4 +88,3 @@
   
 </mat-drawer-container>
   
-

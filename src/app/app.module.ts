@@ -27,6 +27,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
+import {MatDatepickerModule} from '@angular/material/datepicker';
 
 import { SettingsComponent } from './components/settings/settings.component';
 import { LoginComponent } from './components/login/login.component';
@@ -64,6 +65,7 @@ import { BudgetEntryComponent } from './components/budget-entry/budget-entry.com
     ReactiveFormsModule,
     AppBrowserAnimationsModule,
     CommonModule,
+    MatSnackBarModule,
     // Material Modules
     MatSidenavModule,
     MatIconModule,
@@ -74,13 +76,13 @@ import { BudgetEntryComponent } from './components/budget-entry/budget-entry.com
     MatInputModule,
     MatCardModule,
     MatButtonToggleModule,
-    MatSnackBarModule,
     MatProgressSpinnerModule,
     MatTableModule,
     MatChipsModule,
     MatMenuModule,
     MatDialogModule,
     MatExpansionModule,
+    MatDatepickerModule,
     // Other Modules
     DropDownListModule,
     SpreadsheetAllModule,

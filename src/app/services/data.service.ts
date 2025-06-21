@@ -87,28 +87,11 @@ export class DataService {
   }
 
   getFileData$(fileId:number): Observable<Blob>{
-    console.log(fileId);
     return this.http.get(this.backendUrl+"file/"+fileId.toString(), { responseType: 'blob'});
-    
   }
 
   async getQuarterlyBudget(field:TITLE) {
-    // const row = this.workBook.getWorksheet('BUDGET CALC').getRow(field.rn);
-    // let dataPoints: { label: string; y: string | number | Date; }[] = [];
-    // let counter = 1;
-    // row.eachCell((cell, cn) => {
-    //   if(cn > this.getColumnNumberFromLetter("M") && cn <= this.getColumnNumberFromLetter("Q")){
-    //     // modify label
-    //     console.log(cell.result)
-    //     let dataPoint = { label: this.months[(counter*3)-1],  y: cell.result };
-    //     dataPoints.push(dataPoint);
-    //     counter++;
-    //   } 
-    // });
-    
-    // return dataPoints;
-
-    let dataPoints = await firstValueFrom(this.http.post(this.backendUrl+"quarterlyBudget",field
+    let dataPoints = await firstValueFrom(this.http.post(this.backendUrl+"monthlyBudget",field
     ))
     return dataPoints
   }

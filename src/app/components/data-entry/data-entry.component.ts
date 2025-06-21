@@ -11,12 +11,11 @@ import { CellModel, getCell, SpreadsheetComponent, workbookReadonlyAlert } from 
 import { DataService } from 'src/app/services/data.service';
 import * as ExcelJS from 'exceljs';
 
-
 @Component({
-    selector: 'app-data-entry',
-    templateUrl: './data-entry.component.html',
-    styleUrls: ['./data-entry.component.css'],
-    standalone: false
+  selector: 'app-data-entry',
+  templateUrl: './data-entry.component.html',
+  styleUrls: ['./data-entry.component.css'],
+  standalone: false
 })
 export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('spreadsheet') public spreadsheetObj!: SpreadsheetComponent;
@@ -24,7 +23,6 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedShift: 'day' | 'night' = 'day';
   isLoading = false;
   excelData: any[] = [];
-  selectedSection: string | null = null;
   dataStatus: 'approved' | 'pending' | 'rejected' | null = "pending";
   isSupervisor = false;
   openUrl: string = "";
@@ -42,7 +40,7 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
     {id:2, name:"Crushing Shift Tonnes", type: 'crushing'},
     {id:3, name:"SAG01 Mill", type: 'sag'}
   ];
-
+  selectedSection: {id:number, name:string, type: 'cil' | 'crushing' | 'sag'} | null = this.sections[0]; // Default to first section
   constructor(
     private http: HttpClient,
     private dataService: DataService,
@@ -83,7 +81,6 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
     const currentHour = new Date().getHours();
     const timeSlots: string[] = [];
     let startHour: number;
-    console.log(currentHour)
     if (currentHour >= 6 && currentHour < 18) {
       startHour = 6;  // 6 AM - 6 PM
     } else if (currentHour >= 18 && currentHour < 24) {
@@ -132,7 +129,6 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
         workbook.xlsx
           .load(buffer)
           .then(
-
         );
         const worksheet = workbook.worksheets[0];
         timeSlots.forEach((time, index) => {
@@ -151,30 +147,56 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     
   }
+  private findObjectNamePosition(worksheet: ExcelJS.Worksheet, objectName: string): { row: number; col: number } | null {
+    let position = null;
+    
+    // Search through first 10 rows and columns for the object name
+    for (let row = 1; row <= 10; row++) {
+      for (let col = 1; col <= 10; col++) {
+        const cell = worksheet.getCell(row, col);
+        // console.log("object name:", objectName, "cell value:", cell.value);
+        if (cell.value?.toString().trim().toLowerCase() === objectName.toLowerCase()) {
+          position = { row, col };
+          break;
+        }
+      }
+      if (position) break;
+    }
+    
+    return position;
+  }
+
+  private populateColumnData(worksheet: ExcelJS.Worksheet, column: number, startRow: number, values: any[]) {
+    values.forEach((entry: any, index) => {
+      // console.log(entry)
+      const rowIndex = startRow + index;
+      worksheet.getCell(rowIndex, column).value = entry.value;
+    });
+  }
 
   private async loadExistingData(baseFile: File): Promise<any> {
-    // console.log("Loading data...");
+    console.log("Loading data...");
     let fileR: File;
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
       const response = await this.apiService.getDataEntries(
-        localStorage.getItem('userSection')!,
+        this.selectedSection!.type,
         today
       );
       const workbook = new ExcelJS.Workbook();
       const reader = new FileReader();
       reader.readAsArrayBuffer(baseFile);
 
-      // console.log(response)
+      // if there is a response
       if (response.length > 0) {
-        console.log("Loading data...");
+        console.log("Response: ", response);
         this.dataStatus = response[0].status;
-        console.log(this.dataStatus);
         this.currentEntryId = response[0]._id;
         const data = response[0].data;
 
+        // open the base file for that section
         reader.onload = () => {
           const buffer = reader.result as any;
           
@@ -183,22 +205,18 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
             .then(async () => {
               const worksheet = workbook.worksheets[0];
               const timeSlots = this.getTimeSlots();
-              console.log(timeSlots)
               timeSlots.forEach((time, index) => {
-                worksheet.getCell(this.alphabets[2] + (index + 7).toString()).value = time;
+                worksheet.getCell(this.alphabets[0] + (index + 2).toString()).value = time;
               });
               
-              Object.keys(data).forEach((objectName, colIndex) => {
-                if(data[objectName].values) {
+              Object.keys(data).forEach((objectName) => {
+                const position = this.findObjectNamePosition(worksheet, objectName);
+                // console.log("Object name:", objectName, "position:", position);
+
+                if (position && data[objectName].values) {
                   const values = data[objectName].values;
-                  values.forEach((entry: any) => {
-                    // consider using get time slots function
-                    // const rowIndex = ["6","7","8","9","10","11","12","13","14","15","16","17","18"].indexOf(entry.time);
-                    const rowIndex = this.getTimeSlots().indexOf(entry.time);
-                    if (rowIndex !== -1) {
-                      worksheet.getCell(this.alphabets[colIndex+3]+(rowIndex+7).toString()).value = entry.value;
-                    }
-                  });
+                  // Start populating data in the row below the object name
+                  this.populateColumnData(worksheet, position.col, position.row + 1, values);
                 }
               });
               workbook.xlsx.writeBuffer().then((buffer: any) => {
@@ -214,17 +232,20 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
           }
       }
       else {
+        this.dataStatus = 'pending';
         reader.onload = () => {
         const buffer = reader.result as any;
         workbook.xlsx
             .load(buffer)
             .then(async () => {
-              const worksheet = workbook.worksheets[0];
-              const timeSlots = this.getTimeSlots();
-              console.log(timeSlots)
-              timeSlots.forEach((time, index) => {
-                worksheet.getCell(this.alphabets[2] + (index + 7).toString()).value = time;
-              });
+              if(this.selectedSection!.type === "cil" ){
+                const worksheet = workbook.worksheets[0];
+                const timeSlots = this.getTimeSlots();
+                timeSlots.forEach((time, index) => {
+                  worksheet.getCell(this.alphabets[0] + (index + 2).toString()).value = time;
+                });
+              }
+              
               workbook.xlsx.writeBuffer().then((buffer: any) => {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 let file1: File = new File([blob], 'Worksheet1.xlsx');
@@ -235,8 +256,8 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
             .catch((error) => {
               console.log(error)
             });
-        // this.spreadsheetObj!.open({ file: baseFile });
-        this.updateTimeSlots(baseFile);
+        // // this.spreadsheetObj!.open({ file: baseFile });
+        // if(this.selectedSection!.type === "cil" ) this.updateTimeSlots(baseFile);
       }
       }
     } catch (error) {
@@ -249,19 +270,32 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = true;
     try {
       const timeSlots = this.getTimeSlots();
-      const data: { [key: string]: { values: { time: string; value: number }[] } } = {};
+      const data: { [key: string]: { values: { time: string; value: string | number }[] } } = {};
       
-      const objectNames = [
+      const CILobjectNames = [
         'SOLN Au (ppm)', 
         '% SOLIDS', 
         'pH', 
-        'CN CONC', 
+        'CN CONC (ppm)', 
         'DO (mg/L)', 
-        'CAR CONC(g/L)'
+        'CAR CONC (g/L)'
       ];
 
+      const crushingObjectNames = [
+        "WEIGHTOMETER READING",
+        "TONNES CRUSHED",
+        "COMMENTS",
+      ];
+      let objectNames: string[] = [];
+
+      if(this.selectedSection!.type === "cil")
+        objectNames = CILobjectNames;
+      else if(this.selectedSection!.type === "crushing")
+        objectNames = crushingObjectNames;
+      
       // Collect data from spreadsheet
       objectNames.forEach((objectName, colIndex) => {
+
         data[objectName] = { values: [] };
         // CIL takes data in a two hour interval. Let them know that they only need to enter for those
         // two hour intervals. The rest should go in as zero. Later write logic to delete these values since it can 
@@ -269,22 +303,22 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
         // consider using get time slots function
           this.getTimeSlots().forEach((time, rowIndex) => {
           const sheet = this.spreadsheetObj.getActiveSheet();
-          let cell: CellModel = getCell(6 + rowIndex, 3 + colIndex, sheet);
+          let cell: CellModel = getCell(1 + rowIndex, 1 + colIndex, sheet);
           // To get the formatted cell value, specify the cell model.
-          console.log(this.spreadsheetObj.getDisplayText(cell));
+          // console.log(this.spreadsheetObj.getDisplayText(cell));
           const cellValue = this.spreadsheetObj.getDisplayText(cell)
           
           if (cellValue !== null && cellValue !== undefined) {
             data[objectName].values.push({
               time,
-              value: Number(cellValue)
+              value: objectName === "COMMENTS" ? cellValue : Number(cellValue)
             });
           }
         });
       });
-      console.log(data)
       // Submit to API
-      await this.apiService.submitDataEntry(this.employeeId!, this.userSection!, data);
+      // console.log(data);
+      await this.apiService.submitDataEntry(this.employeeId!, this.selectedSection!.type, data);
       this.showMessage('Data submitted successfully');
       this.dataStatus = 'pending';
     } catch (error) {
@@ -293,6 +327,30 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  onSectionChange(event: any) {
+    this.selectedSection = event.value;
+    this.loadSectionData();
+  }
+
+  async loadSectionData() {
+    this.isLoading = true;
+    try {
+      // Get file data using the section's id
+      const baseFile = await lastValueFrom(this.dataService.getFileData$(+this.selectedSection!.id));
+      let file: File = new File([baseFile], 'Worksheet.xlsx');
+      this.loadExistingData(file);
+    } catch (error) {
+      console.error('Error loading section data:', error);
+      this.snackBar.open('Error loading section data', 'Close', { duration: 3000 });
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private populateSpreadsheet(data: any) {
+    // Implement logic to populate spreadsheet with existing data
   }
 
   showMessage(message: string) {
@@ -305,7 +363,6 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async approveData() {
     if (!this.currentEntryId) return;
-    console.log(this.currentEntryId)
     try {
       await this.apiService.approveDataEntry(this.currentEntryId, 'approved', this.employeeId!);
       this.dataStatus = 'approved';
@@ -318,7 +375,6 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async rejectData() {
     if (!this.currentEntryId) return;
-    console.log(this.currentEntryId)
     try {
       await this.apiService.approveDataEntry(this.currentEntryId, 'pending', this.employeeId!);
       this.dataStatus = 'pending';

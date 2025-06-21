@@ -1,10 +1,23 @@
 <div class="chart-container">
   <div class="parameter-selector">
-    <ejs-dropdownlist 
-      [dataSource]='parameters'
-      [(value)]='selectedParameter'
-      (change)='onParameterChange($event)'>
-    </ejs-dropdownlist>
+    <div class="dropdown-group">
+      <label>Section:</label>
+      <ejs-dropdownlist 
+        [dataSource]='sections'
+        [(value)]='selectedSection'
+        (change)='onSectionChange($event)'>
+      </ejs-dropdownlist>
+    </div>
+    
+    <div class="dropdown-group">
+      <label>Parameter:</label>
+      <ejs-dropdownlist 
+        [dataSource]='parameters'
+        [(value)]='selectedParameter'
+        (change)='onParameterChange($event)'
+        [enabled]='parameters.length > 0'>
+      </ejs-dropdownlist>
+    </div>
   </div>
   
   <ejs-chart #chart 

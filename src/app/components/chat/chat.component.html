@@ -1,0 +1,27 @@
+<div class="chat-container">
+  <div class="messages" #chatContainer>
+    <div *ngFor="let message of messages" 
+         [ngClass]="{'message': true, 'user-message': message.isUser, 'ai-message': !message.isUser}">
+      <div class="message-content">
+        <div class="message-text" style="white-space: pre-wrap;" [innerHTML]="message.content"></div>
+        <div class="message-time">{{ message.timestamp | date:'shortTime' }}</div>
+      </div>
+    </div>
+    <div *ngIf="isLoading" class="loading-message">
+      <mat-spinner diameter="20"></mat-spinner>
+      <span>Processing your request...</span>
+    </div>
+  </div>
+  
+  <div class="input-container">
+    <input type="text" 
+           [(ngModel)]="newMessage" 
+           (keyup.enter)="sendMessage()"
+           placeholder="Ask about your mining data..."
+           [disabled]="isLoading">
+    <button (click)="sendMessage()" 
+            [disabled]="!newMessage.trim() || isLoading">
+      Send
+    </button>
+  </div>
+</div>

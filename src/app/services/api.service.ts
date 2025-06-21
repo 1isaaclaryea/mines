@@ -104,6 +104,20 @@ export class ApiService {
   }
   
 
+  async getDataEntriesByDateRange(section: string, startDate: Date, endDate: Date): Promise<any> {
+    const params = new HttpParams()
+      .set('section', section)
+      .set('startDate', startDate.toISOString())
+      .set('endDate', endDate.toISOString());
+
+    return firstValueFrom(
+      this.http.get(`${this.baseUrl}/data-entry/range`, {
+        params,
+        headers: this.getHeaders()
+      })
+    );
+  }
+
   // Helper methods to transform Excel data
   transformCILPlantData(excelData: any): any {
     return {
@@ -194,5 +208,15 @@ export class ApiService {
       return (response as any).data;
     });
   }
+
+  async askAI(message: string): Promise<any> {
+    return firstValueFrom(
+      this.http.post(`${this.baseUrl}/chat`, 
+        { message },
+        { headers: this.getHeaders() }
+      )
+    ).then(response => {
+      return (response as any).reply;
+    });
+  }
 }
- 

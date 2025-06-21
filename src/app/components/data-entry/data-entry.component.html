@@ -1,15 +1,26 @@
 <div class="spreadsheet-container">
-    <div class="status-label" *ngIf="dataStatus">
-        <mat-chip [ngClass]="{'approved': dataStatus === 'approved', 'pending': dataStatus === 'pending', 'rejected': dataStatus === 'rejected'}">
-            <mat-icon>{{
-                dataStatus === 'approved' ? 'check_circle' : 
-                dataStatus === 'rejected' ? 'cancel' : 'pending'
-            }}</mat-icon>
-            {{
-                dataStatus === 'approved' ? 'Approved' : 
-                dataStatus === 'rejected' ? 'Rejected' : 'Pending Approval'
-            }}
-        </mat-chip>
+    <div class="controls-row">
+        <mat-form-field>
+            <mat-label>Select Section</mat-label>
+            <mat-select [(value)]="selectedSection" (selectionChange)="onSectionChange($event)">
+                <mat-option *ngFor="let section of sections" [value]="section">
+                    {{section.name}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <div class="status-label" *ngIf="dataStatus">
+            <mat-chip [ngClass]="{'approved': dataStatus === 'approved', 'pending': dataStatus === 'pending', 'rejected': dataStatus === 'rejected'}">
+                <mat-icon>{{
+                    dataStatus === 'approved' ? 'check_circle' : 
+                    dataStatus === 'rejected' ? 'cancel' : 'pending'
+                }}</mat-icon>
+                {{
+                    dataStatus === 'approved' ? 'Approved' : 
+                    dataStatus === 'rejected' ? 'Rejected' : 'Pending Approval'
+                }}
+            </mat-chip>
+        </div>
     </div>
 
     <div id="univer-container">
