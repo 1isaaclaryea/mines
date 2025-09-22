@@ -105,13 +105,65 @@ mat-icon {
     justify-content: space-between;
     margin-bottom: 1rem;
     padding: 0 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.controls-row mat-form-field {
-    width: 300px;
+.controls-section {
+    flex: 1;
+    min-width: 250px;
 }
 
-@media screen and (max-width: 600px) {
+.controls-section mat-form-field {
+    width: 100%;
+    max-width: 300px;
+}
+
+.status-section {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.status-section .mat-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    white-space: nowrap;
+}
+
+.status-section .mat-chip.approved {
+    background-color: #4caf50 !important;
+    color: white !important;
+}
+
+.status-section .mat-chip.pending {
+    background-color: #ff9800 !important;
+    color: white !important;
+}
+
+.status-section .mat-chip.rejected {
+    background-color: #f44336 !important;
+    color: white !important;
+}
+
+@media screen and (max-width: 768px) {
+    .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .controls-section {
+        width: 100%;
+    }
+    
+    .status-section {
+        justify-content: center;
+        width: 100%;
+    }
+    
     .spreadsheet-container {
         height: 70vh;
         padding: 0.5rem;
@@ -120,6 +172,24 @@ mat-icon {
     .centered-controls {
         margin: 0.5rem auto;
         padding: 0 0.5rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .centered-controls button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .spreadsheet-container {
+        height: 65vh;
+        padding: 0.25rem;
+    }
+    
+    .controls-row {
+        padding: 0 0.5rem;
     }
 }
 
@@ -127,6 +197,35 @@ mat-icon {
     .spreadsheet-container {
         height: 60vh;
     }
+}
+
+/* Loading Overlay Styles */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    border-radius: 4px;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.loading-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
 }
 
 ::ng-deep .success-snackbar {

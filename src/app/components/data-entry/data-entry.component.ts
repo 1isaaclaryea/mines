@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { ApproveDialogComponent } from '../approve-dialog/approve-dialog.component';
-import { CellModel, getCell, SpreadsheetComponent, workbookReadonlyAlert } from '@syncfusion/ej2-angular-spreadsheet';
+import { CellModel, getCell, SpreadsheetComponent, workbookReadonlyAlert, OpenOptions } from '@syncfusion/ej2-angular-spreadsheet';
 import { DataService } from 'src/app/services/data.service';
 import * as ExcelJS from 'exceljs';
 
@@ -68,6 +68,11 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngAfterViewInit(): Promise<void> {
+    // Configure Syncfusion to work offline
+    if (this.spreadsheetObj) {
+      this.spreadsheetObj.openUrl = '';
+      this.spreadsheetObj.saveUrl = '';
+    }
     // this.loadExistingData();
   }
 
@@ -98,15 +103,27 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async getInitialWorkbookData() {
+    console.log('🔍 Starting getInitialWorkbookData...');
+    console.log('📁 Selected section:', this.selectedSection);
+    this.isLoading = true;
+    
     this.baseFileSubscription = this.baseFile$.subscribe({
       next: (data) => {
+        console.log('✅ File data received:', data);
+        console.log('📊 File size:', data.size, 'bytes');
         this.tmpFileData = data;
        
       },
-      error: err => console.error('Observable emitted an error: ' + err),
+      error: err => {
+        console.error('❌ Observable emitted an error: ' + err);
+        console.error('🔗 Check if backend is running on https://mines-backend1-production.up.railway.app');
+        this.isLoading = false;
+      },
       complete: () => {
+        console.log('🏁 File observable completed, creating File object...');
         // check if these have to be deleted
         let file: File = new File([this.tmpFileData], 'Worksheet.xlsx');
+        console.log('📄 Created file:', file.name, 'Size:', file.size);
         // this.updateTimeSlots(file);
         this.loadExistingData(file);
       }
@@ -174,8 +191,88 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private async openFileInSpreadsheet(file: File) {
+    console.log('🔧 Loading Excel data into Syncfusion spreadsheet...');
+    try {
+      // Check if spreadsheet is properly initialized
+      if (!this.spreadsheetObj) {
+        console.error('❌ Spreadsheet object not initialized');
+        this.isLoading = false;
+        return;
+      }
+      
+      // Read the Excel file using ExcelJS and convert to Syncfusion format
+      const workbook = new ExcelJS.Workbook();
+      const arrayBuffer = await file.arrayBuffer();
+      await workbook.xlsx.load(arrayBuffer);
+      
+      const worksheet = workbook.worksheets[0];
+      const sheetData: any[][] = [];
+      const formattingData: any[][] = [];
+      
+      // Convert ExcelJS data to 2D array for Syncfusion with formatting
+      worksheet.eachRow((row, rowNumber) => {
+        const rowData: any[] = [];
+        const formatData: any[] = [];
+        
+        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+          let cellValue = cell.value;
+          
+          // Check if the cell value is a Date object and format it as time only
+          if (cellValue instanceof Date) {
+            // Format as HH:MM
+            const hours = cellValue.getHours().toString().padStart(2, '0');
+            const minutes = cellValue.getMinutes().toString().padStart(2, '0');
+            cellValue = `${hours}:${minutes}`;
+          }
+          
+          rowData[colNumber - 1] = cellValue;
+          
+          // Preserve basic formatting information (simplified to avoid Syncfusion errors)
+          const cellStyle: any = {};
+          
+          if (cell.font?.bold) cellStyle.fontWeight = 'bold';
+          if (cell.font?.italic) cellStyle.fontStyle = 'italic';
+          if (cell.alignment?.horizontal) cellStyle.textAlign = cell.alignment.horizontal;
+          if (cell.font?.size) cellStyle.fontSize = `${cell.font.size}px`;
+          
+          formatData[colNumber - 1] = {
+            style: cellStyle
+          };
+        });
+        
+        sheetData[rowNumber - 1] = rowData;
+        formattingData[rowNumber - 1] = formatData;
+      });
+      
+      console.log('📊 Converted Excel data with formatting, rows:', sheetData.length);
+      
+      // Load data directly into spreadsheet without complex formatting to avoid errors
+      this.spreadsheetObj.sheets = [{
+        name: 'Sheet1',
+        rows: sheetData.map((rowData, index) => ({
+          index: index,
+          cells: rowData.map((cellValue, cellIndex) => ({
+            index: cellIndex,
+            value: cellValue
+          }))
+        }))
+      }];
+      
+      // Refresh the spreadsheet to display the data
+      this.spreadsheetObj.dataBind();
+      console.log('✅ Spreadsheet loaded with Excel data');
+      this.isLoading = false;
+      
+    } catch (error) {
+      console.error('❌ Error loading Excel data:', error);
+      this.isLoading = false;
+    }
+  }
+
   private async loadExistingData(baseFile: File): Promise<any> {
-    console.log("Loading data...");
+    console.log("🔄 Loading existing data...");
+    console.log("📁 Base file received:", baseFile.name, "Size:", baseFile.size);
     let fileR: File;
     try {
       const today = new Date();
@@ -204,9 +301,30 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
             .load(buffer)
             .then(async () => {
               const worksheet = workbook.worksheets[0];
+              
+              // Update time slots for all sections (always update based on current time)
               const timeSlots = this.getTimeSlots();
+              console.log('⏰ Generated time slots for existing data:', timeSlots, 'Section:', this.selectedSection!.type);
+              
+              // Find the time column in the worksheet
+              let timeColumnIndex = 1; // Default to column A (1-based)
+              
+              // Search for time-related headers to find the correct column
+              for (let col = 1; col <= 10; col++) {
+                const headerCell = worksheet.getCell(1, col);
+                const headerValue = headerCell.value?.toString().toLowerCase();
+                if (headerValue && (headerValue.includes('time') || headerValue.includes('hour') || col === 1)) {
+                  timeColumnIndex = col;
+                  break;
+                }
+              }
+              
               timeSlots.forEach((time, index) => {
-                worksheet.getCell(this.alphabets[0] + (index + 2).toString()).value = time;
+                // SAG mill starts from row 3, others start from row 2
+                const startRow = this.selectedSection!.type === 'sag' ? 3 : 2;
+                const cellAddress = this.alphabets[timeColumnIndex - 1] + (index + startRow).toString();
+                worksheet.getCell(cellAddress).value = time;
+                console.log(`⏰ Setting time ${time} at ${cellAddress} for ${this.selectedSection!.type} (start row: ${startRow})`);
               });
               
               Object.keys(data).forEach((objectName) => {
@@ -220,9 +338,11 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
                 }
               });
               workbook.xlsx.writeBuffer().then((buffer: any) => {
+                console.log('📝 Excel buffer created (with existing data), size:', buffer.byteLength);
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 let file1: File = new File([blob], 'Worksheet1.xlsx');
-                this.spreadsheetObj!.open({ file: file1 });
+                console.log('📄 Final file created:', file1.name, 'Size:', file1.size);
+                this.openFileInSpreadsheet(file1);
               });
 
             })
@@ -238,18 +358,39 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
         workbook.xlsx
             .load(buffer)
             .then(async () => {
-              if(this.selectedSection!.type === "cil" ){
-                const worksheet = workbook.worksheets[0];
-                const timeSlots = this.getTimeSlots();
-                timeSlots.forEach((time, index) => {
-                  worksheet.getCell(this.alphabets[0] + (index + 2).toString()).value = time;
-                });
+              const worksheet = workbook.worksheets[0];
+              
+              // Update time slots for all sections (always update based on current time)
+              const timeSlots = this.getTimeSlots();
+              console.log('⏰ Generated time slots for new data:', timeSlots, 'Section:', this.selectedSection!.type);
+              
+              // Find the time column in the worksheet
+              let timeColumnIndex = 1; // Default to column A (1-based)
+              
+              // Search for time-related headers to find the correct column
+              for (let col = 1; col <= 10; col++) {
+                const headerCell = worksheet.getCell(1, col);
+                const headerValue = headerCell.value?.toString().toLowerCase();
+                if (headerValue && (headerValue.includes('time') || headerValue.includes('hour') || col === 1)) {
+                  timeColumnIndex = col;
+                  break;
+                }
               }
               
+              timeSlots.forEach((time, index) => {
+                // SAG mill starts from row 3, others start from row 2
+                const startRow = this.selectedSection!.type === 'sag' ? 3 : 2;
+                const cellAddress = this.alphabets[timeColumnIndex - 1] + (index + startRow).toString();
+                worksheet.getCell(cellAddress).value = time;
+                console.log(`⏰ Setting time ${time} at ${cellAddress} for ${this.selectedSection!.type} (start row: ${startRow})`);
+              });
+              
               workbook.xlsx.writeBuffer().then((buffer: any) => {
+                console.log('📝 Excel buffer created (new data), size:', buffer.byteLength);
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 let file1: File = new File([blob], 'Worksheet1.xlsx');
-                this.spreadsheetObj!.open({ file: file1 });
+                console.log('📄 Final file created:', file1.name, 'Size:', file1.size);
+                this.openFileInSpreadsheet(file1);
               });
 
             })
@@ -337,14 +478,14 @@ export class DataEntryComponent implements OnInit, AfterViewInit, OnDestroy {
   async loadSectionData() {
     this.isLoading = true;
     try {
+      console.log('🔄 Loading section data for:', this.selectedSection?.name);
       // Get file data using the section's id
       const baseFile = await lastValueFrom(this.dataService.getFileData$(+this.selectedSection!.id));
       let file: File = new File([baseFile], 'Worksheet.xlsx');
-      this.loadExistingData(file);
+      await this.loadExistingData(file);
     } catch (error) {
       console.error('Error loading section data:', error);
       this.snackBar.open('Error loading section data', 'Close', { duration: 3000 });
-    } finally {
       this.isLoading = false;
     }
   }

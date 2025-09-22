@@ -1,15 +1,29 @@
 <div class="spreadsheet-container">
-    <div class="controls-row">
-        <mat-form-field>
-            <mat-label>Select Section</mat-label>
-            <mat-select [(value)]="selectedSection" (selectionChange)="onSectionChange($event)">
-                <mat-option *ngFor="let section of sections" [value]="section">
-                    {{section.name}}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
+    <!-- Loading Spinner Overlay -->
+    <div class="loading-overlay" *ngIf="isLoading">
+        <div class="loading-content">
+            <mat-progress-spinner 
+                mode="indeterminate" 
+                diameter="60"
+                color="primary">
+            </mat-progress-spinner>
+            <p>Loading spreadsheet data...</p>
+        </div>
+    </div>
 
-        <div class="status-label" *ngIf="dataStatus">
+    <div class="controls-row">
+        <div class="controls-section">
+            <mat-form-field>
+                <mat-label>Select Section</mat-label>
+                <mat-select [(value)]="selectedSection" (selectionChange)="onSectionChange($event)" [disabled]="isLoading">
+                    <mat-option *ngFor="let section of sections" [value]="section">
+                        {{section.name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+
+        <div class="status-section" *ngIf="dataStatus">
             <mat-chip [ngClass]="{'approved': dataStatus === 'approved', 'pending': dataStatus === 'pending', 'rejected': dataStatus === 'rejected'}">
                 <mat-icon>{{
                     dataStatus === 'approved' ? 'check_circle' : 
@@ -24,7 +38,7 @@
     </div>
 
     <div id="univer-container">
-        <ejs-spreadsheet #spreadsheet allowOpen="true" openUrl='https://services.syncfusion.com/angular/production/api/spreadsheet/open'>
+        <ejs-spreadsheet #spreadsheet allowOpen="true" openUrl="" saveUrl="">
         </ejs-spreadsheet>
     </div>
     

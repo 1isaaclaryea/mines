@@ -17,7 +17,7 @@ export class DataService {
   private numbers: number[] = [0,1,2,3,4,5,6,7,8,9];
   private months: string[] = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 
-  private backendUrl = "http://localhost:5000/"
+  private backendUrl = "https://mines-backend1-production.up.railway.app/"
   constructor(private http: HttpClient) { }
 
   public get workBook() : exceljs.Workbook {
